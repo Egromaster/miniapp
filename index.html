@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <title>Умный календарь ухода за лицом</title>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>🧴 Уход за лицом</h1>
+      <p class="subtitle">Ваш персональный календарь красоты</p>
+    </header>
+
+    <div class="main-content">
+      <!-- Текущий день -->
+      <div class="today-section">
+        <h2>Сегодня</h2>
+        <div class="today-date" id="todayDate"></div>
+        <div class="today-tasks" id="todayTasks">
+          <!-- Задачи будут добавлены динамически -->
+        </div>
+      </div>
+
+      <!-- Календарь -->
+      <div class="calendar-section">
+        <div class="calendar-header">
+          <button class="nav-btn" id="prevMonth">‹</button>
+          <h3 id="currentMonth">Декабрь 2024</h3>
+          <button class="nav-btn" id="nextMonth">›</button>
+        </div>
+        <div class="calendar-grid" id="calendarGrid">
+          <!-- Календарь будет создан динамически -->
+        </div>
+      </div>
+
+      <!-- Добавление новой процедуры -->
+      <div class="add-procedure-section">
+        <h3>Добавить процедуру</h3>
+        <div class="form-group">
+          <input type="text" id="procedureName" placeholder="Название процедуры" class="input-field">
+        </div>
+        <div class="form-group">
+          <select id="procedureType" class="input-field">
+            <option value="">Выберите тип процедуры</option>
+            <option value="cleansing">Очищение</option>
+            <option value="toning">Тонизирование</option>
+            <option value="moisturizing">Увлажнение</option>
+            <option value="exfoliation">Пилинг</option>
+            <option value="mask">Маска</option>
+            <option value="serum">Сыворотка</option>
+            <option value="sunscreen">Солнцезащита</option>
+            <option value="night">Ночной уход</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <select id="frequency" class="input-field">
+            <option value="">Частота</option>
+            <option value="daily">Ежедневно</option>
+            <option value="twice_daily">2 раза в день</option>
+            <option value="weekly">Раз в неделю</option>
+            <option value="biweekly">Раз в 2 недели</option>
+            <option value="monthly">Раз в месяц</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <input type="time" id="procedureTime" class="input-field">
+        </div>
+        <button class="btn-primary" id="addProcedure">Добавить</button>
+      </div>
+
+      <!-- Статистика -->
+      <div class="stats-section">
+        <h3>Статистика</h3>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-number" id="completedToday">0</div>
+            <div class="stat-label">Выполнено сегодня</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="streakDays">0</div>
+            <div class="stat-label">Дней подряд</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="totalProcedures">0</div>
+            <div class="stat-label">Всего процедур</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно для редактирования -->
+  <div class="modal" id="editModal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h3>Редактировать процедуру</h3>
+      <div class="form-group">
+        <input type="text" id="editProcedureName" class="input-field">
+      </div>
+      <div class="form-group">
+        <select id="editProcedureType" class="input-field">
+          <option value="cleansing">Очищение</option>
+          <option value="toning">Тонизирование</option>
+          <option value="moisturizing">Увлажнение</option>
+          <option value="exfoliation">Пилинг</option>
+          <option value="mask">Маска</option>
+          <option value="serum">Сыворотка</option>
+          <option value="sunscreen">Солнцезащита</option>
+          <option value="night">Ночной уход</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <select id="editFrequency" class="input-field">
+          <option value="daily">Ежедневно</option>
+          <option value="twice_daily">2 раза в день</option>
+          <option value="weekly">Раз в неделю</option>
+          <option value="biweekly">Раз в 2 недели</option>
+          <option value="monthly">Раз в месяц</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <input type="time" id="editProcedureTime" class="input-field">
+      </div>
+      <div class="modal-buttons">
+        <button class="btn-secondary" id="deleteProcedure">Удалить</button>
+        <button class="btn-primary" id="saveProcedure">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
+
