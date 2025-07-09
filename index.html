@@ -3,11 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Умный календарь ухода</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        h1 { text-align: center; }
+        .task { margin-top: 20px; font-size: 18px; }
+    </style>
+    <script>
+        const tasks = {
+            'Mon': 'Очищение и увлажнение',
+            'Tue': 'Очищение и маска',
+            'Wed': 'Очищение и увлажнение',
+            'Thu': 'Очищение и пилинг',
+            'Fri': 'Очищение и увлажнение',
+            'Sat': 'Очищение и питательная маска',
+            'Sun': 'Отдых и солнцезащита'
+        };
+
+        function updateTask() {
+            const input = document.getElementById('date');
+            const date = input.value ? new Date(input.value) : new Date();
+            const day = date.toLocaleDateString('en-US', { weekday: 'short' });
+            document.getElementById('task').textContent = tasks[day] || 'Очищение и увлажнение';
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (window.Telegram && Telegram.WebApp) {
+                Telegram.WebApp.ready();
+            }
+            updateTask();
+        });
+    </script>
 </head>
 <body>
-    <div class="Main">
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Earum, temporibus ad mollitia hic vel repudiandae sit labore quaerat voluptatum id quisquam deleniti officia dicta harum sapiente, praesentium recusandae quas et?
-    </div>
+    <h1>Умный календарь ухода</h1>
+    <input type="date" id="date" onchange="updateTask()">
+    <div class="task" id="task"></div>
 </body>
 </html>
