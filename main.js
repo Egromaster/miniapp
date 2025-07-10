@@ -305,8 +305,3 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
-    } else {
-      alert('Ошибка загрузки фото: ' + (data.error || 'Попробуйте позже.'));
-    }
-  });
-}
