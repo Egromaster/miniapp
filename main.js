@@ -317,15 +317,7 @@ document.addEventListener('DOMContentLoaded', function() {
           body: JSON.stringify(currentUser)
         });
         
-        const data = await res.json();
-        if (data.status === 'ok') {
-          alert('Данные успешно сохранены! Подбор продуктов будет доступен после анализа таблицы данных');
-        } else {
-          alert('Ошибка сохранения данных: ' + (data.error || 'Попробуйте позже.'));
-        }
-      } catch (e) {
-        alert('Ошибка соединения с сервером.');
-      }
+        
     });
   }
 });
