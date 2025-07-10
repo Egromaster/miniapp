@@ -30,6 +30,8 @@
 const btnRegister = document.getElementById('btn-register');
 const screenWelcome = document.getElementById('screen-welcome');
 const screenRegister = document.getElementById('screen-register');
+const screenSelfie = document.getElementById('screen-selfie');
+
 if (btnRegister && screenRegister && screenWelcome) {
   btnRegister.addEventListener('click', () => {
     screenWelcome.style.display = 'none';
@@ -56,13 +58,82 @@ if (btnDoRegister) {
       });
       const data = await res.json();
       if (data.status === 'ok') {
-        alert('Регистрация успешна!');
-        // Здесь можно переключить на следующий экран
+        // Переход на экран селфи
+        screenRegister.style.display = 'none';
+        screenSelfie.style.display = 'flex';
       } else {
         alert('Ошибка регистрации: ' + (data.error || 'Попробуйте позже.'));
       }
     } catch (e) {
       alert('Ошибка соединения с сервером.');
+    }
+  });
+}
+
+// --- Селфи: камера и загрузка ---
+const btnTakeSelfie = document.getElementById('btn-take-selfie');
+const selfieVideo = document.getElementById('selfieVideo');
+const selfieCanvas = document.getElementById('selfieCanvas');
+const selfiePlaceholder = document.getElementById('selfiePlaceholder');
+const selfieFile = document.getElementById('selfieFile');
+
+let selfieStream = null;
+
+if (btnTakeSelfie) {
+  btnTakeSelfie.addEventListener('click', async () => {
+    // Запуск камеры
+    if (!selfieStream) {
+      try {
+        selfieStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        selfieVideo.srcObject = selfieStream;
+        selfieVideo.style.display = 'block';
+        selfiePlaceholder.style.display = 'none';
+      } catch (e) {
+        alert('Не удалось получить доступ к камере');
+        return;
+      }
+    } else {
+      // Сохраняем фото
+      selfieCanvas.width = selfieVideo.videoWidth;
+      selfieCanvas.height = selfieVideo.videoHeight;
+      selfieCanvas.getContext('2d').drawImage(selfieVideo, 0, 0);
+      selfieCanvas.toBlob(async (blob) => {
+        const formData = new FormData();
+        formData.append('photo', blob, 'selfie.jpg');
+        formData.append('email', document.getElementById('reg-email').value.trim());
+        const res = await fetch('/api/upload_selfie', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.status === 'ok') {
+          alert('Фото успешно сохранено!');
+          // Здесь можно добавить анализ фото или переход к следующему шагу
+        } else {
+          alert('Ошибка загрузки фото: ' + (data.error || 'Попробуйте позже.'));
+        }
+      }, 'image/jpeg', 0.95);
+    }
+  });
+}
+
+if (selfieFile) {
+  selfieFile.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('photo', file, 'selfie.jpg');
+    formData.append('email', document.getElementById('reg-email').value.trim());
+    const res = await fetch('/api/upload_selfie', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json();
+    if (data.status === 'ok') {
+      alert('Фото успешно сохранено!');
+      // Здесь можно добавить анализ фото или переход к следующему шагу
+    } else {
+      alert('Ошибка загрузки фото: ' + (data.error || 'Попробуйте позже.'));
     }
   });
 }
