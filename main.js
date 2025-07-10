@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
+  // Конфигурация API
+  const AMVERA_BASE_URL = 'https://miniapp1.amvera.app';
+
   const btnRegister = document.getElementById('btn-register');
   const screenWelcome = document.getElementById('screen-welcome');
   const screenRegister = document.getElementById('screen-register');
@@ -53,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
       try {
-        const res = await fetch('/api/register', {
+        const res = await fetch(`${AMVERA_BASE_URL}/api/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, email, password })
@@ -106,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
           const formData = new FormData();
           formData.append('photo', blob, 'selfie.jpg');
           formData.append('email', document.getElementById('reg-email').value.trim());
-          const res = await fetch('/api/upload_selfie', {
+          const res = await fetch(`${AMVERA_BASE_URL}/api/upload_selfie`, {
             method: 'POST',
             body: formData
           });
@@ -129,7 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const formData = new FormData();
       formData.append('photo', file, 'selfie.jpg');
       formData.append('email', document.getElementById('reg-email').value.trim());
-      const res = await fetch('/api/upload_selfie', {
+      const res = await fetch(`${AMVERA_BASE_URL}/api/upload_selfie`, {
         method: 'POST',
         body: formData
       });
@@ -300,8 +303,8 @@ document.addEventListener('DOMContentLoaded', function() {
   if (btnBudgetNext) {
     btnBudgetNext.addEventListener('click', () => {
       currentUser.budget = selectedBudget;
-      alert('Выбран бюджет: ' + selectedBudget);
-      // Здесь можно перейти к подбору ухода или финальному экрану
+      // Здесь будет логика подбора продуктов
+      alert('Подбор продуктов будет доступен после анализа таблицы данных');
     });
   }
 });
