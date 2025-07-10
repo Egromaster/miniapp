@@ -245,3 +245,43 @@ body {
 #btn-do-register {
   margin-top: 8px;
 }
+.gender-screen {
+  background: #eafffa;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 16px;
+}
+.gender-title {
+  font-size: 1.3em;
+  font-weight: 600;
+  margin-bottom: 8px;
+  margin-top: 8px;
+  color: #222;
+  text-align: center;
+}
+.gender-desc {
+  font-size: 1em;
+  color: #666;
+  margin-bottom: 18px;
+  text-align: center;
+}
+.gender-btn {
+  width: 100%;
+  max-width: 320px;
+  margin: 8px 0;
+  font-size: 1.1em;
+  font-weight: 500;
+}
+#btn-gender-next {
+  width: 100%;
+  max-width: 320px;
+}
+.gender-btn.selected {
+  border: 2px solid #4ecdc4;
+  background: #f0f4ff;
+  color: #222;
+}
+
