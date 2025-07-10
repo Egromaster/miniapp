@@ -1,3 +1,4 @@
+
 /* Основные стили */
 * {
   margin: 0;
@@ -438,4 +439,4 @@ body {
 .btn-primary {
   background: var(--tg-theme-button-color, linear-gradient(135deg, #667eea, #764ba2));
   color: var(--tg-theme-button-text-color, white);
-} 
+}
