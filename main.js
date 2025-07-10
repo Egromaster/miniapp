@@ -1,396 +1,307 @@
-// Инициализация Telegram Web App
-let tg = window.Telegram.WebApp;
-tg.expand();
-tg.ready();
+document.addEventListener('DOMContentLoaded', function() {
+  const btnRegister = document.getElementById('btn-register');
+  const screenWelcome = document.getElementById('screen-welcome');
+  const screenRegister = document.getElementById('screen-register');
+  const btnDoRegister = document.getElementById('btn-do-register');
+  const screenSelfie = document.getElementById('screen-selfie');
+  const btnTakeSelfie = document.getElementById('btn-take-selfie');
+  const selfieVideo = document.getElementById('selfieVideo');
+  const selfieCanvas = document.getElementById('selfieCanvas');
+  const selfiePlaceholder = document.getElementById('selfiePlaceholder');
+  const selfieFile = document.getElementById('selfieFile');
+  let selfieStream = null;
+  const screenGender = document.getElementById('screen-gender');
+  const genderBtns = document.querySelectorAll('.gender-btn');
+  const btnGenderNext = document.getElementById('btn-gender-next');
+  let currentUser = {};
+  const screenAge = document.getElementById('screen-age');
+  const ageBtns = document.querySelectorAll('.age-btn');
+  const btnAgeNext = document.getElementById('btn-age-next');
+  const screenSkin = document.getElementById('screen-skin');
+  const skinBtns = document.querySelectorAll('.skin-btn');
+  const btnSkinNext = document.getElementById('btn-skin-next');
+  const screenProblems = document.getElementById('screen-problems');
+  const problemBtns = document.querySelectorAll('.problem-btn');
+  const btnProblemsNext = document.getElementById('btn-problems-next');
+  const screenGoals = document.getElementById('screen-goals');
+  const goalBtns = document.querySelectorAll('.goal-btn');
+  const btnGoalsNext = document.getElementById('btn-goals-next');
+  const screenSteps = document.getElementById('screen-steps');
+  const stepsBtns = document.querySelectorAll('.steps-btn');
+  const btnStepsNext = document.getElementById('btn-steps-next');
+  const screenCountry = document.getElementById('screen-country');
+  const countryBtns = document.querySelectorAll('.country-btn');
+  const btnCountryNext = document.getElementById('btn-country-next');
+  const screenBudget = document.getElementById('screen-budget');
+  const budgetBtns = document.querySelectorAll('.budget-btn');
+  const btnBudgetNext = document.getElementById('btn-budget-next');
 
-// Состояние приложения
-let state = {
-  procedures: [],
-  currentDate: new Date(),
-  selectedDate: new Date(),
-  editingProcedure: null
-};
-
-// Загрузка данных из localStorage
-function loadData() {
-  const saved = localStorage.getItem('skincareCalendar');
-  if (saved) {
-    const data = JSON.parse(saved);
-    state.procedures = data.procedures || [];
-    state.currentDate = new Date(data.currentDate || Date.now());
-    state.selectedDate = new Date(data.selectedDate || Date.now());
+  if (btnRegister && screenRegister && screenWelcome) {
+    btnRegister.addEventListener('click', () => {
+      screenWelcome.style.display = 'none';
+      screenRegister.style.display = 'flex';
+    });
   }
-}
 
-// Сохранение данных в localStorage
-function saveData() {
-  localStorage.setItem('skincareCalendar', JSON.stringify({
-    procedures: state.procedures,
-    currentDate: state.currentDate.toISOString(),
-    selectedDate: state.selectedDate.toISOString()
-  }));
-}
-
-// Форматирование даты
-function formatDate(date) {
-  const options = { 
-    weekday: 'long', 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  };
-  return date.toLocaleDateString('ru-RU', options);
-}
-
-// Форматирование времени
-function formatTime(time) {
-  if (!time) return '';
-  return time;
-}
-
-// Получение иконки для типа процедуры
-function getProcedureIcon(type) {
-  const icons = {
-    cleansing: '🧼',
-    toning: '💧',
-    moisturizing: '💦',
-    exfoliation: '✨',
-    mask: '🎭',
-    serum: '💎',
-    sunscreen: '☀️',
-    night: '🌙'
-  };
-  return icons[type] || '🧴';
-}
-
-// Получение названия типа процедуры
-function getProcedureTypeName(type) {
-  const names = {
-    cleansing: 'Очищение',
-    toning: 'Тонизирование',
-    moisturizing: 'Увлажнение',
-    exfoliation: 'Пилинг',
-    mask: 'Маска',
-    serum: 'Сыворотка',
-    sunscreen: 'Солнцезащита',
-    night: 'Ночной уход'
-  };
-  return names[type] || type;
-}
-
-// Проверка, должна ли процедура выполняться в определенную дату
-function shouldPerformProcedure(procedure, date) {
-  const procedureDate = new Date(procedure.startDate);
-  const daysDiff = Math.floor((date - procedureDate) / (1000 * 60 * 60 * 24));
-  
-  switch (procedure.frequency) {
-    case 'daily':
-      return daysDiff >= 0;
-    case 'twice_daily':
-      return daysDiff >= 0;
-    case 'weekly':
-      return daysDiff >= 0 && daysDiff % 7 === 0;
-    case 'biweekly':
-      return daysDiff >= 0 && daysDiff % 14 === 0;
-    case 'monthly':
-      return daysDiff >= 0 && daysDiff % 30 === 0;
-    default:
-      return false;
+  if (btnDoRegister) {
+    btnDoRegister.addEventListener('click', async () => {
+      const name = document.getElementById('reg-name').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value;
+      if (!name || !email || !password) {
+        alert('Пожалуйста, заполните все поля!');
+        return;
+      }
+      try {
+        const res = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password })
+        });
+        const data = await res.json();
+        if (data.status === 'ok') {
+          // Переход на экран селфи
+          screenRegister.style.display = 'none';
+          screenSelfie.style.display = 'flex';
+        } else {
+          alert('Ошибка регистрации: ' + (data.error || 'Попробуйте позже.'));
+        }
+      } catch (e) {
+        alert('Ошибка соединения с сервером.');
+      }
+    });
   }
-}
 
-// Получение процедур для определенной даты
-function getProceduresForDate(date) {
-  return state.procedures.filter(procedure => shouldPerformProcedure(procedure, date));
-}
-
-// Обновление отображения текущего дня
-function updateTodaySection() {
-  const todayDateEl = document.getElementById('todayDate');
-  const todayTasksEl = document.getElementById('todayTasks');
-  
-  todayDateEl.textContent = formatDate(state.currentDate);
-  
-  const todayProcedures = getProceduresForDate(state.currentDate);
-  
-  if (todayProcedures.length === 0) {
-    todayTasksEl.innerHTML = '<p style="text-align: center; color: #7f8c8d; padding: 20px;">Нет запланированных процедур на сегодня</p>';
-    return;
+  // После успешной загрузки селфи — переход на экран выбора пола
+  function showGenderScreen() {
+    screenSelfie.style.display = 'none';
+    screenGender.style.display = 'flex';
   }
-  
-  todayTasksEl.innerHTML = todayProcedures.map(procedure => {
-    const isCompleted = procedure.completedDates && 
-      procedure.completedDates.includes(state.currentDate.toDateString());
-    
-    return `
-      <div class="task-item ${isCompleted ? 'completed' : ''}" data-id="${procedure.id}">
-        <div class="task-info">
-          <div class="task-icon ${procedure.type}">${getProcedureIcon(procedure.type)}</div>
-          <div class="task-details">
-            <h4>${procedure.name}</h4>
-            <p>${getProcedureTypeName(procedure.type)} • ${formatTime(procedure.time)}</p>
-          </div>
-        </div>
-        <div class="task-actions">
-          ${!isCompleted ? 
-            `<button class="btn-small btn-complete" onclick="completeProcedure('${procedure.id}')">✓</button>` : 
-            `<button class="btn-small btn-complete" style="background: #27ae60;" disabled>✓</button>`
+
+  // Вызов showGenderScreen после успешной загрузки фото
+  function onSelfieSuccess() {
+    showGenderScreen();
+  }
+
+  // --- Селфи: камера и загрузка ---
+  if (btnTakeSelfie) {
+    btnTakeSelfie.addEventListener('click', async () => {
+      // Запуск камеры
+      if (!selfieStream) {
+        try {
+          selfieStream = await navigator.mediaDevices.getUserMedia({ video: true });
+          selfieVideo.srcObject = selfieStream;
+          selfieVideo.style.display = 'block';
+          selfiePlaceholder.style.display = 'none';
+        } catch (e) {
+          alert('Не удалось получить доступ к камере');
+          return;
+        }
+      } else {
+        // Сохраняем фото
+        selfieCanvas.width = selfieVideo.videoWidth;
+        selfieCanvas.height = selfieVideo.videoHeight;
+        selfieCanvas.getContext('2d').drawImage(selfieVideo, 0, 0);
+        selfieCanvas.toBlob(async (blob) => {
+          const formData = new FormData();
+          formData.append('photo', blob, 'selfie.jpg');
+          formData.append('email', document.getElementById('reg-email').value.trim());
+          const res = await fetch('/api/upload_selfie', {
+            method: 'POST',
+            body: formData
+          });
+          const data = await res.json();
+          if (data.status === 'ok') {
+            alert('Фото успешно сохранено!');
+            onSelfieSuccess();
+          } else {
+            alert('Ошибка загрузки фото: ' + (data.error || 'Попробуйте позже.'));
           }
-          <button class="btn-small btn-edit" onclick="editProcedure('${procedure.id}')">✏️</button>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
+        }, 'image/jpeg', 0.95);
+      }
+    });
+  }
 
-// Создание календаря
-function createCalendar() {
-  const currentMonthEl = document.getElementById('currentMonth');
-  const calendarGridEl = document.getElementById('calendarGrid');
-  
-  const year = state.selectedDate.getFullYear();
-  const month = state.selectedDate.getMonth();
-  
-  currentMonthEl.textContent = new Date(year, month).toLocaleDateString('ru-RU', {
-    month: 'long',
-    year: 'numeric'
+  if (selfieFile) {
+    selfieFile.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const formData = new FormData();
+      formData.append('photo', file, 'selfie.jpg');
+      formData.append('email', document.getElementById('reg-email').value.trim());
+      const res = await fetch('/api/upload_selfie', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (data.status === 'ok') {
+        alert('Фото успешно сохранено!');
+        onSelfieSuccess();
+      } else {
+        alert('Ошибка загрузки фото: ' + (data.error || 'Попробуйте позже.'));
+      }
+    });
+  }
+
+  // Логика выбора пола
+  let selectedGender = null;
+  genderBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedGender = btn.getAttribute('data-gender');
+      genderBtns.forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      btnGenderNext.disabled = false;
+    });
   });
-  
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
-  const startDate = new Date(firstDay);
-  startDate.setDate(startDate.getDate() - firstDay.getDay());
-  
-  let calendarHTML = '';
-  
-  // Дни недели
-  const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-  weekDays.forEach(day => {
-    calendarHTML += `<div class="calendar-day" style="font-weight: bold; color: #7f8c8d;">${day}</div>`;
+
+  if (btnGenderNext) {
+    btnGenderNext.addEventListener('click', () => {
+      currentUser.gender = selectedGender;
+      screenGender.style.display = 'none';
+      screenAge.style.display = 'flex';
+    });
+  }
+
+  // Логика выбора возраста
+  let selectedAge = null;
+  ageBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedAge = btn.getAttribute('data-age');
+      ageBtns.forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      btnAgeNext.disabled = false;
+    });
   });
-  
-  // Дни месяца
-  for (let i = 0; i < 42; i++) {
-    const currentDate = new Date(startDate);
-    currentDate.setDate(startDate.getDate() + i);
-    
-    const isCurrentMonth = currentDate.getMonth() === month;
-    const isToday = currentDate.toDateString() === state.currentDate.toDateString();
-    const hasProcedures = getProceduresForDate(currentDate).length > 0;
-    
-    let className = 'calendar-day';
-    if (!isCurrentMonth) className += ' other-month';
-    if (isToday) className += ' today';
-    if (hasProcedures) className += ' has-procedures';
-    
-    calendarHTML += `
-      <div class="${className}" onclick="selectDate('${currentDate.toISOString()}')">
-        ${currentDate.getDate()}
-      </div>
-    `;
+
+  if (btnAgeNext) {
+    btnAgeNext.addEventListener('click', () => {
+      currentUser.age = selectedAge;
+      screenAge.style.display = 'none';
+      screenSkin.style.display = 'flex';
+    });
   }
-  
-  calendarGridEl.innerHTML = calendarHTML;
-}
 
-// Выбор даты в календаре
-function selectDate(dateString) {
-  state.selectedDate = new Date(dateString);
-  updateTodaySection();
-  saveData();
-}
-
-// Добавление новой процедуры
-function addProcedure() {
-  const name = document.getElementById('procedureName').value.trim();
-  const type = document.getElementById('procedureType').value;
-  const frequency = document.getElementById('frequency').value;
-  const time = document.getElementById('procedureTime').value;
-  
-  if (!name || !type || !frequency) {
-    alert('Пожалуйста, заполните все обязательные поля');
-    return;
-  }
-  
-  const newProcedure = {
-    id: Date.now().toString(),
-    name,
-    type,
-    frequency,
-    time,
-    startDate: state.currentDate.toISOString(),
-    completedDates: []
-  };
-  
-  state.procedures.push(newProcedure);
-  saveData();
-  updateTodaySection();
-  createCalendar();
-  updateStats();
-  
-  // Очистка формы
-  document.getElementById('procedureName').value = '';
-  document.getElementById('procedureType').value = '';
-  document.getElementById('frequency').value = '';
-  document.getElementById('procedureTime').value = '';
-  
-  // Уведомление пользователя
-  tg.showAlert('Процедура добавлена!');
-}
-
-// Завершение процедуры
-function completeProcedure(procedureId) {
-  const procedure = state.procedures.find(p => p.id === procedureId);
-  if (!procedure) return;
-  
-  if (!procedure.completedDates) {
-    procedure.completedDates = [];
-  }
-  
-  const todayString = state.currentDate.toDateString();
-  if (!procedure.completedDates.includes(todayString)) {
-    procedure.completedDates.push(todayString);
-    saveData();
-    updateTodaySection();
-    updateStats();
-    tg.showAlert('Процедура выполнена! 🎉');
-  }
-}
-
-// Редактирование процедуры
-function editProcedure(procedureId) {
-  const procedure = state.procedures.find(p => p.id === procedureId);
-  if (!procedure) return;
-  
-  state.editingProcedure = procedure;
-  
-  document.getElementById('editProcedureName').value = procedure.name;
-  document.getElementById('editProcedureType').value = procedure.type;
-  document.getElementById('editFrequency').value = procedure.frequency;
-  document.getElementById('editProcedureTime').value = procedure.time || '';
-  
-  document.getElementById('editModal').style.display = 'block';
-}
-
-// Сохранение изменений процедуры
-function saveProcedure() {
-  if (!state.editingProcedure) return;
-  
-  const name = document.getElementById('editProcedureName').value.trim();
-  const type = document.getElementById('editProcedureType').value;
-  const frequency = document.getElementById('editFrequency').value;
-  const time = document.getElementById('editProcedureTime').value;
-  
-  if (!name || !type || !frequency) {
-    alert('Пожалуйста, заполните все обязательные поля');
-    return;
-  }
-  
-  state.editingProcedure.name = name;
-  state.editingProcedure.type = type;
-  state.editingProcedure.frequency = frequency;
-  state.editingProcedure.time = time;
-  
-  saveData();
-  updateTodaySection();
-  createCalendar();
-  updateStats();
-  
-  closeModal();
-  tg.showAlert('Процедура обновлена!');
-}
-
-// Удаление процедуры
-function deleteProcedure() {
-  if (!state.editingProcedure) return;
-  
-  if (confirm('Вы уверены, что хотите удалить эту процедуру?')) {
-    state.procedures = state.procedures.filter(p => p.id !== state.editingProcedure.id);
-    saveData();
-    updateTodaySection();
-    createCalendar();
-    updateStats();
-    
-    closeModal();
-    tg.showAlert('Процедура удалена');
-  }
-}
-
-// Закрытие модального окна
-function closeModal() {
-  document.getElementById('editModal').style.display = 'none';
-  state.editingProcedure = null;
-}
-
-// Обновление статистики
-function updateStats() {
-  const todayProcedures = getProceduresForDate(state.currentDate);
-  const completedToday = todayProcedures.filter(p => 
-    p.completedDates && p.completedDates.includes(state.currentDate.toDateString())
-  ).length;
-  
-  // Подсчет дней подряд
-  let streakDays = 0;
-  const today = new Date(state.currentDate);
-  
-  for (let i = 0; i < 365; i++) {
-    const checkDate = new Date(today);
-    checkDate.setDate(today.getDate() - i);
-    
-    const dayProcedures = getProceduresForDate(checkDate);
-    const completedProcedures = dayProcedures.filter(p => 
-      p.completedDates && p.completedDates.includes(checkDate.toDateString())
-    );
-    
-    if (dayProcedures.length > 0 && completedProcedures.length === dayProcedures.length) {
-      streakDays++;
-    } else {
-      break;
-    }
-  }
-  
-  // Общее количество процедур
-  const totalProcedures = state.procedures.length;
-  
-  document.getElementById('completedToday').textContent = completedToday;
-  document.getElementById('streakDays').textContent = streakDays;
-  document.getElementById('totalProcedures').textContent = totalProcedures;
-}
-
-// Навигация по месяцам
-function changeMonth(direction) {
-  state.selectedDate.setMonth(state.selectedDate.getMonth() + direction);
-  createCalendar();
-  saveData();
-}
-
-// Инициализация приложения
-function init() {
-  loadData();
-  updateTodaySection();
-  createCalendar();
-  updateStats();
-  
-  // Обработчики событий
-  document.getElementById('addProcedure').addEventListener('click', addProcedure);
-  document.getElementById('prevMonth').addEventListener('click', () => changeMonth(-1));
-  document.getElementById('nextMonth').addEventListener('click', () => changeMonth(1));
-  document.getElementById('saveProcedure').addEventListener('click', saveProcedure);
-  document.getElementById('deleteProcedure').addEventListener('click', deleteProcedure);
-  
-  // Закрытие модального окна
-  document.querySelector('.close').addEventListener('click', closeModal);
-  document.getElementById('editModal').addEventListener('click', (e) => {
-    if (e.target === document.getElementById('editModal')) {
-      closeModal();
-    }
+  // Логика выбора типа кожи
+  let selectedSkin = null;
+  skinBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedSkin = btn.getAttribute('data-skin');
+      skinBtns.forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      btnSkinNext.disabled = false;
+    });
   });
-  
-  // Глобальные функции для onclick
-  window.completeProcedure = completeProcedure;
-  window.editProcedure = editProcedure;
-  window.selectDate = selectDate;
-}
 
-// Запуск приложения
-document.addEventListener('DOMContentLoaded', init);
+  if (btnSkinNext) {
+    btnSkinNext.addEventListener('click', () => {
+      currentUser.skin = selectedSkin;
+      screenSkin.style.display = 'none';
+      screenProblems.style.display = 'flex';
+    });
+  }
+
+  // Логика выбора проблем кожи (множественный выбор)
+  let selectedProblems = [];
+  problemBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const value = btn.getAttribute('data-problem');
+      if (btn.classList.contains('selected')) {
+        btn.classList.remove('selected');
+        selectedProblems = selectedProblems.filter(p => p !== value);
+      } else {
+        btn.classList.add('selected');
+        selectedProblems.push(value);
+      }
+      btnProblemsNext.disabled = selectedProblems.length === 0;
+    });
+  });
+
+  if (btnProblemsNext) {
+    btnProblemsNext.addEventListener('click', () => {
+      currentUser.problems = selectedProblems;
+      screenProblems.style.display = 'none';
+      screenGoals.style.display = 'flex';
+    });
+  }
+
+  // Логика выбора целей ухода (множественный выбор)
+  let selectedGoals = [];
+  goalBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const value = btn.getAttribute('data-goal');
+      if (btn.classList.contains('selected')) {
+        btn.classList.remove('selected');
+        selectedGoals = selectedGoals.filter(g => g !== value);
+      } else {
+        btn.classList.add('selected');
+        selectedGoals.push(value);
+      }
+      btnGoalsNext.disabled = selectedGoals.length === 0;
+    });
+  });
+
+  if (btnGoalsNext) {
+    btnGoalsNext.addEventListener('click', () => {
+      currentUser.goals = selectedGoals;
+      screenGoals.style.display = 'none';
+      screenSteps.style.display = 'flex';
+    });
+  }
+
+  // Логика выбора количества ступеней ухода
+  let selectedSteps = null;
+  stepsBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedSteps = btn.getAttribute('data-steps');
+      stepsBtns.forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      btnStepsNext.disabled = false;
+    });
+  });
+
+  if (btnStepsNext) {
+    btnStepsNext.addEventListener('click', () => {
+      currentUser.steps = selectedSteps;
+      screenSteps.style.display = 'none';
+      screenCountry.style.display = 'flex';
+    });
+  }
+
+  // Логика выбора страны-производителя
+  let selectedCountry = null;
+  countryBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedCountry = btn.getAttribute('data-country');
+      countryBtns.forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      btnCountryNext.disabled = false;
+    });
+  });
+
+  if (btnCountryNext) {
+    btnCountryNext.addEventListener('click', () => {
+      currentUser.country = selectedCountry;
+      screenCountry.style.display = 'none';
+      screenBudget.style.display = 'flex';
+    });
+  }
+
+  // Логика выбора бюджета
+  let selectedBudget = null;
+  budgetBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedBudget = btn.getAttribute('data-budget');
+      budgetBtns.forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      btnBudgetNext.disabled = false;
+    });
+  });
+
+  if (btnBudgetNext) {
+    btnBudgetNext.addEventListener('click', () => {
+      currentUser.budget = selectedBudget;
+      alert('Выбран бюджет: ' + selectedBudget);
+      // Здесь можно перейти к подбору ухода или финальному экрану
+    });
+  }
+});
