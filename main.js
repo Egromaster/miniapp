@@ -1,110 +1,332 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-import os
-from werkzeug.utils import secure_filename
 
-app = Flask(__name__)
-CORS(app)  # Включаем CORS для всех маршрутов
+document.addEventListener('DOMContentLoaded', function() {
+  // Конфигурация API
+  const AMVERA_BASE_URL = 'https://miniapp1-egromaster.amvera.io';
 
-# Временное хранилище пользователей
-users = []
-user_data = []  # Хранилище для полных данных пользователей
+  const btnRegister = document.getElementById('btn-register');
+  const screenWelcome = document.getElementById('screen-welcome');
+  const screenRegister = document.getElementById('screen-register');
+  const btnDoRegister = document.getElementById('btn-do-register');
+  const screenSelfie = document.getElementById('screen-selfie');
+  const btnTakeSelfie = document.getElementById('btn-take-selfie');
+  const selfieVideo = document.getElementById('selfieVideo');
+  const selfieCanvas = document.getElementById('selfieCanvas');
+  const selfiePlaceholder = document.getElementById('selfiePlaceholder');
+  const selfieFile = document.getElementById('selfieFile');
+  let selfieStream = null;
+  const screenGender = document.getElementById('screen-gender');
+  const genderBtns = document.querySelectorAll('.gender-btn');
+  const btnGenderNext = document.getElementById('btn-gender-next');
+  let currentUser = {};
+  const screenAge = document.getElementById('screen-age');
+  const ageBtns = document.querySelectorAll('.age-btn');
+  const btnAgeNext = document.getElementById('btn-age-next');
+  const screenSkin = document.getElementById('screen-skin');
+  const skinBtns = document.querySelectorAll('.skin-btn');
+  const btnSkinNext = document.getElementById('btn-skin-next');
+  const screenProblems = document.getElementById('screen-problems');
+  const problemBtns = document.querySelectorAll('.problem-btn');
+  const btnProblemsNext = document.getElementById('btn-problems-next');
+  const screenGoals = document.getElementById('screen-goals');
+  const goalBtns = document.querySelectorAll('.goal-btn');
+  const btnGoalsNext = document.getElementById('btn-goals-next');
+  const screenSteps = document.getElementById('screen-steps');
+  const stepsBtns = document.querySelectorAll('.steps-btn');
+  const btnStepsNext = document.getElementById('btn-steps-next');
+  const screenCountry = document.getElementById('screen-country');
+  const countryBtns = document.querySelectorAll('.country-btn');
+  const btnCountryNext = document.getElementById('btn-country-next');
+  const screenBudget = document.getElementById('screen-budget');
+  const budgetBtns = document.querySelectorAll('.budget-btn');
+  const btnBudgetNext = document.getElementById('btn-budget-next');
 
-# Конфигурация для загрузки файлов
-UPLOAD_FOLDER = 'uploads'
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+  if (btnRegister && screenRegister && screenWelcome) {
+    btnRegister.addEventListener('click', () => {
+      screenWelcome.style.display = 'none';
+      screenRegister.style.display = 'flex';
+    });
+  }
 
-@app.route('/')
-def index():
-    return 'Backend работает!'
+  if (btnDoRegister) {
+    btnDoRegister.addEventListener('click', async () => {
+      const name = document.getElementById('reg-name').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value;
+      if (!name || !email || !password) {
+        alert('Пожалуйста, заполните все поля!');
+        return;
+      }
+      try {
+        const res = await fetch(`${AMVERA_BASE_URL}/api/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password })
+        });
+        const data = await res.json();
+        if (data.status === 'ok') {
+          // Сохраняем данные пользователя
+          currentUser.name = name;
+          currentUser.email = email;
+          currentUser.password = password;
+          
+          // Переход на экран селфи
+          screenRegister.style.display = 'none';
+          screenSelfie.style.display = 'flex';
+        } else {
+          alert('Ошибка регистрации: ' + (data.error || 'Попробуйте позже.'));
+        }
+      } catch (e) {
+        alert('Ошибка соединения с сервером.');
+      }
+    });
+  }
 
-@app.route('/api/register', methods=['POST'])
-def register():
-    data = request.json
-    if not data:
-        return jsonify({'status': 'error', 'error': 'Данные не получены'}), 400
-    
-    name = data.get('name')
-    email = data.get('email')
-    password = data.get('password')
-    if not name or not email or not password:
-        return jsonify({'status': 'error', 'error': 'Все поля обязательны!'}), 400
-    # Проверка на уникальность email
-    for user in users:
-        if user['email'].lower() == email.lower():
-            return jsonify({'status': 'error', 'error': 'Пользователь с такой почтой уже существует!'}), 400
-    users.append({'name': name, 'email': email, 'password': password})
-    return jsonify({'status': 'ok'})
+  // После успешной загрузки селфи — переход на экран выбора пола
+  function showGenderScreen() {
+    screenSelfie.style.display = 'none';
+    screenGender.style.display = 'flex';
+  }
 
-@app.route('/api/save_user_data', methods=['POST'])
-def save_user_data():
-    try:
-        data = request.json
-        if not data:
-            return jsonify({'status': 'error', 'error': 'Данные не получены'}), 400
-        
-        # Проверяем, есть ли пользователь с таким email
-        user_email = data.get('email')
-        if not user_email:
-            return jsonify({'status': 'error', 'error': 'Email обязателен'}), 400
-        
-        # Обновляем или добавляем данные пользователя
-        existing_user = None
-        for i, user in enumerate(user_data):
-            if user.get('email') == user_email:
-                existing_user = i
-                break
-        
-        if existing_user is not None:
-            # Обновляем существующие данные
-            user_data[existing_user].update(data)
-        else:
-            # Добавляем новые данные
-            user_data.append(data)
-        
-        print(f"Сохранены данные пользователя: {user_email}")
-        print(f"Полные данные: {data}")
-        
-        return jsonify({'status': 'ok', 'message': 'Данные успешно сохранены'})
-        
-    except Exception as e:
-        print(f"Ошибка при сохранении данных: {str(e)}")
-        return jsonify({'status': 'error', 'error': 'Ошибка сервера'}), 500
+  // Вызов showGenderScreen после успешной загрузки фото
+  function onSelfieSuccess() {
+    showGenderScreen();
+  }
 
-@app.route('/api/upload_selfie', methods=['POST'])
-def upload_selfie():
-    try:
-        if 'photo' not in request.files:
-            return jsonify({'status': 'error', 'error': 'Файл не найден'}), 400
-        
-        file = request.files['photo']
-        email = request.form.get('email')
-        
-        if not email:
-            return jsonify({'status': 'error', 'error': 'Email обязателен'}), 400
-        
-        if file.filename == '':
-            return jsonify({'status': 'error', 'error': 'Файл не выбран'}), 400
-        
-        # Сохраняем файл с именем, основанным на email
-        filename = secure_filename(f"selfie_{email}.jpg")
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)
-        
-        print(f"Селфи сохранен для {email}: {filepath}")
-        
-        return jsonify({'status': 'ok', 'message': 'Фото успешно загружено'})
-        
-    except Exception as e:
-        print(f"Ошибка при загрузке селфи: {str(e)}")
-        return jsonify({'status': 'error', 'error': 'Ошибка сервера'}), 500
+  // --- Селфи: камера и загрузка ---
+  if (btnTakeSelfie) {
+    btnTakeSelfie.addEventListener('click', async () => {
+      // Запуск камеры
+      if (!selfieStream) {
+        try {
+          selfieStream = await navigator.mediaDevices.getUserMedia({ video: true });
+          selfieVideo.srcObject = selfieStream;
+          selfieVideo.style.display = 'block';
+          selfiePlaceholder.style.display = 'none';
+        } catch (e) {
+          alert('Не удалось получить доступ к камере');
+          return;
+        }
+      } else {
+        // Сохраняем фото
+        selfieCanvas.width = selfieVideo.videoWidth;
+        selfieCanvas.height = selfieVideo.videoHeight;
+        selfieCanvas.getContext('2d').drawImage(selfieVideo, 0, 0);
+        selfieCanvas.toBlob(async (blob) => {
+          const formData = new FormData();
+          formData.append('photo', blob, 'selfie.jpg');
+          formData.append('email', currentUser.email);
+          const res = await fetch(`${AMVERA_BASE_URL}/api/upload_selfie`, {
+            method: 'POST',
+            body: formData
+          });
+          const data = await res.json();
+          if (data.status === 'ok') {
+            alert('Фото успешно сохранено!');
+            onSelfieSuccess();
+          } else {
+            alert('Ошибка загрузки фото: ' + (data.error || 'Попробуйте позже.'));
+          }
+        }, 'image/jpeg', 0.95);
+      }
+    });
+  }
 
-@app.route('/api/get_user_data', methods=['GET'])
-def get_user_data():
-    """Получить все данные пользователей (для отладки)"""
-    return jsonify({'status': 'ok', 'data': user_data})
+  if (selfieFile) {
+    selfieFile.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const formData = new FormData();
+      formData.append('photo', file, 'selfie.jpg');
+      formData.append('email', currentUser.email);
+      const res = await fetch(`${AMVERA_BASE_URL}/api/upload_selfie`, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (data.status === 'ok') {
+        alert('Фото успешно сохранено!');
+        onSelfieSuccess();
+      } else {
+        alert('Ошибка загрузки фото: ' + (data.error || 'Попробуйте позже.'));
+      }
+    });
+  }
 
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+  // Логика выбора пола
+  let selectedGender = null;
+  genderBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedGender = btn.getAttribute('data-gender');
+      genderBtns.forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      btnGenderNext.disabled = false;
+    });
+  });
+
+  if (btnGenderNext) {
+    btnGenderNext.addEventListener('click', () => {
+      currentUser.gender = selectedGender;
+      screenGender.style.display = 'none';
+      screenAge.style.display = 'flex';
+    });
+  }
+
+  // Логика выбора возраста
+  let selectedAge = null;
+  ageBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedAge = btn.getAttribute('data-age');
+      ageBtns.forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      btnAgeNext.disabled = false;
+    });
+  });
+
+  if (btnAgeNext) {
+    btnAgeNext.addEventListener('click', () => {
+      currentUser.age = selectedAge;
+      screenAge.style.display = 'none';
+      screenSkin.style.display = 'flex';
+    });
+  }
+
+  // Логика выбора типа кожи
+  let selectedSkin = null;
+  skinBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedSkin = btn.getAttribute('data-skin');
+      skinBtns.forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      btnSkinNext.disabled = false;
+    });
+  });
+
+  if (btnSkinNext) {
+    btnSkinNext.addEventListener('click', () => {
+      currentUser.skin = selectedSkin;
+      screenSkin.style.display = 'none';
+      screenProblems.style.display = 'flex';
+    });
+  }
+
+  // Логика выбора проблем кожи (множественный выбор)
+  let selectedProblems = [];
+  problemBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const value = btn.getAttribute('data-problem');
+      if (btn.classList.contains('selected')) {
+        btn.classList.remove('selected');
+        selectedProblems = selectedProblems.filter(p => p !== value);
+      } else {
+        btn.classList.add('selected');
+        selectedProblems.push(value);
+      }
+      btnProblemsNext.disabled = selectedProblems.length === 0;
+    });
+  });
+
+  if (btnProblemsNext) {
+    btnProblemsNext.addEventListener('click', () => {
+      currentUser.problems = selectedProblems;
+      screenProblems.style.display = 'none';
+      screenGoals.style.display = 'flex';
+    });
+  }
+
+  // Логика выбора целей ухода (множественный выбор)
+  let selectedGoals = [];
+  goalBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const value = btn.getAttribute('data-goal');
+      if (btn.classList.contains('selected')) {
+        btn.classList.remove('selected');
+        selectedGoals = selectedGoals.filter(g => g !== value);
+      } else {
+        btn.classList.add('selected');
+        selectedGoals.push(value);
+      }
+      btnGoalsNext.disabled = selectedGoals.length === 0;
+    });
+  });
+
+  if (btnGoalsNext) {
+    btnGoalsNext.addEventListener('click', () => {
+      currentUser.goals = selectedGoals;
+      screenGoals.style.display = 'none';
+      screenSteps.style.display = 'flex';
+    });
+  }
+
+  // Логика выбора количества ступеней ухода
+  let selectedSteps = null;
+  stepsBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedSteps = btn.getAttribute('data-steps');
+      stepsBtns.forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      btnStepsNext.disabled = false;
+    });
+  });
+
+  if (btnStepsNext) {
+    btnStepsNext.addEventListener('click', () => {
+      currentUser.steps = selectedSteps;
+      screenSteps.style.display = 'none';
+      screenCountry.style.display = 'flex';
+    });
+  }
+
+  // Логика выбора страны-производителя
+  let selectedCountry = null;
+  countryBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedCountry = btn.getAttribute('data-country');
+      countryBtns.forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      btnCountryNext.disabled = false;
+    });
+  });
+
+  if (btnCountryNext) {
+    btnCountryNext.addEventListener('click', () => {
+      currentUser.country = selectedCountry;
+      screenCountry.style.display = 'none';
+      screenBudget.style.display = 'flex';
+    });
+  }
+
+  // Логика выбора бюджета
+  let selectedBudget = null;
+  budgetBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedBudget = btn.getAttribute('data-budget');
+      budgetBtns.forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      btnBudgetNext.disabled = false;
+    });
+  });
+
+  if (btnBudgetNext) {
+    btnBudgetNext.addEventListener('click', async () => {
+      currentUser.budget = selectedBudget;
+      
+      // Отправляем все данные пользователя на сервер
+      try {
+        const res = await fetch(`${AMVERA_BASE_URL}/api/save_user_data`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(currentUser)
+        });
+        
+        const data = await res.json();
+        if (data.status === 'ok') {
+          alert('Данные успешно сохранены! Подбор продуктов будет доступен после анализа таблицы данных');
+        } else {
+          alert('Ошибка сохранения данных: ' + (data.error || 'Попробуйте позже.'));
+        }
+      } catch (e) {
+        alert('Ошибка соединения с сервером.');
+      }
+    });
+  }
+});
