@@ -63,6 +63,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         const data = await res.json();
         if (data.status === 'ok') {
+          // Сохраняем данные пользователя
+          currentUser.name = name;
+          currentUser.email = email;
+          currentUser.password = password;
+          
           // Переход на экран селфи
           screenRegister.style.display = 'none';
           screenSelfie.style.display = 'flex';
@@ -108,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
         selfieCanvas.toBlob(async (blob) => {
           const formData = new FormData();
           formData.append('photo', blob, 'selfie.jpg');
-          formData.append('email', document.getElementById('reg-email').value.trim());
+          formData.append('email', currentUser.email);
           const res = await fetch(`${AMVERA_BASE_URL}/api/upload_selfie`, {
             method: 'POST',
             body: formData
@@ -131,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (!file) return;
       const formData = new FormData();
       formData.append('photo', file, 'selfie.jpg');
-      formData.append('email', document.getElementById('reg-email').value.trim());
+      formData.append('email', currentUser.email);
       const res = await fetch(`${AMVERA_BASE_URL}/api/upload_selfie`, {
         method: 'POST',
         body: formData
