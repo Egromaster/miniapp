@@ -323,14 +323,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Обработчик для кнопки 'Посмотреть подбор'
-  const btnShowResult = document.getElementById('btn-show-result');
-  if (btnShowResult) {
-    btnShowResult.addEventListener('click', () => {
-      // Здесь логика перехода к результату подбора
-      // alert('Здесь будет результат подбора!');
-      // TODO: заменить на реальный переход к результату, например:
-      // window.location.href = '/result.html';
-    });
-  }
+  // Удалён обработчик для кнопки 'Посмотреть подбор', теперь она не выполняет никаких действий
 });
