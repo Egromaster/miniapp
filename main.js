@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', function() {
   // Конфигурация API
   const AMVERA_BASE_URL = 'https://miniapp1-egromaster.amvera.io';
@@ -309,24 +308,29 @@ document.addEventListener('DOMContentLoaded', function() {
   if (btnBudgetNext) {
     btnBudgetNext.addEventListener('click', async () => {
       currentUser.budget = selectedBudget;
-      
-      // Отправляем все данные пользователя на сервер
       try {
-        const res = await fetch(`${AMVERA_BASE_URL}/api/save_user_data`, {
+        await fetch(`${AMVERA_BASE_URL}/api/save_user_data`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(currentUser)
         });
-        
-        const data = await res.json();
-        if (data.status === 'ok') {
-          alert('Данные успешно сохранены! Подбор продуктов будет доступен после анализа таблицы данных');
-        } else {
-          alert('Ошибка сохранения данных: ' + (data.error || 'Попробуйте позже.'));
-        }
       } catch (e) {
-        alert('Ошибка соединения с сервером.');
+        // Можно добавить обработку ошибок
       }
+      // Показываем экран загрузки
+      document.querySelectorAll('.app-screen').forEach(screen => screen.style.display = 'none');
+      document.getElementById('screen-loading').style.display = 'flex';
+    });
+  }
+
+  // Обработчик для кнопки 'Посмотреть подбор'
+  const btnShowResult = document.getElementById('btn-show-result');
+  if (btnShowResult) {
+    btnShowResult.addEventListener('click', () => {
+      // Здесь логика перехода к результату подбора
+      // alert('Здесь будет результат подбора!');
+      // TODO: заменить на реальный переход к результату, например:
+      // window.location.href = '/result.html';
     });
   }
 });
