@@ -15,6 +15,127 @@
     </header>
 
     <div class="main-content">
+      <!-- Экраны Telegram Mini App -->
+      <div id="screen-welcome" class="app-screen">
+        <div class="logo">Smooth</div>
+        <div class="subtitle">Ваш персональный помощник по уходу за кожей лица</div>
+        <div class="desc">Начните свой путь в уходе за кожей</div>
+        <button id="btn-register" class="btn-primary">Зарегистрироваться</button>
+        <button id="btn-login" class="btn-secondary">Уже есть аккаунт</button>
+      </div>
+
+      <div id="screen-register" class="app-screen" style="display:none;">
+        <div class="logo">Smooth</div>
+        <div class="subtitle">Введите данные для регистрации:</div>
+        <input type="text" id="reg-name" placeholder="Имя" class="input-field">
+        <input type="email" id="reg-email" placeholder="Почта" class="input-field">
+        <input type="password" id="reg-password" placeholder="Придумайте пароль" class="input-field">
+        <button id="btn-do-register" class="btn-primary">Зарегистрироваться</button>
+      </div>
+
+      <div id="screen-login" class="app-screen" style="display:none;">
+        <div class="logo">Smooth</div>
+        <div class="subtitle">Введите данные для входа:</div>
+        <input type="email" id="login-email" placeholder="Почта" class="input-field">
+        <input type="password" id="login-password" placeholder="Пароль" class="input-field">
+        <button id="btn-do-login" class="btn-primary">Войти</button>
+      </div>
+
+      <div id="screen-selfie" class="app-screen" style="display:none;">
+        <div class="subtitle">Сделай селфи</div>
+        <video id="selfie-video" autoplay playsinline style="width:90%;max-width:300px;"></video>
+        <canvas id="selfie-canvas" style="display:none;"></canvas>
+        <div class="selfie-tips">
+          <div>✔ Четко и прямо</div>
+          <div>✔ Без макияжа и фильтров</div>
+          <div>✔ При хорошем освещении</div>
+        </div>
+        <button id="btn-take-selfie" class="btn-primary">Сделать фото</button>
+        <button id="btn-skip-selfie" class="btn-secondary">Пропустить</button>
+      </div>
+
+      <div id="screen-gender" class="app-screen" style="display:none;">
+        <div class="subtitle">Укажи свой пол</div>
+        <button class="btn-primary gender-btn" data-gender="Мужской">Мужской</button>
+        <button class="btn-primary gender-btn" data-gender="Женский">Женский</button>
+      </div>
+
+      <div id="screen-age" class="app-screen" style="display:none;">
+        <div class="subtitle">Укажи свой возраст</div>
+        <button class="btn-primary age-btn" data-age="До 18">До 18</button>
+        <button class="btn-primary age-btn" data-age="18-25">18-25</button>
+        <button class="btn-primary age-btn" data-age="26-35">26-35</button>
+        <button class="btn-primary age-btn" data-age="36-45">36-45</button>
+        <button class="btn-primary age-btn" data-age="46+">46+</button>
+      </div>
+
+      <div id="screen-skin" class="app-screen" style="display:none;">
+        <div class="subtitle">Какой у тебя тип кожи?</div>
+        <button class="btn-primary skin-btn" data-skin="Сухая">Сухая</button>
+        <button class="btn-primary skin-btn" data-skin="Жирная">Жирная</button>
+        <button class="btn-primary skin-btn" data-skin="Комбинированная">Комбинированная</button>
+        <button class="btn-primary skin-btn" data-skin="Нормальная">Нормальная</button>
+        <button class="btn-primary skin-btn" data-skin="Чувствительная">Чувствительная</button>
+      </div>
+
+      <div id="screen-problems" class="app-screen" style="display:none;">
+        <div class="subtitle">Какие проблемы кожи тебя беспокоят?</div>
+        <div class="problems-list">
+          <button class="btn-secondary problem-btn" data-problem="Акне">Акне</button>
+          <button class="btn-secondary problem-btn" data-problem="Сухость">Сухость</button>
+          <button class="btn-secondary problem-btn" data-problem="Поврежденный барьер">Поврежденный барьер</button>
+          <button class="btn-secondary problem-btn" data-problem="Обезвоженность">Обезвоженность</button>
+          <button class="btn-secondary problem-btn" data-problem="Покраснения">Покраснения</button>
+          <button class="btn-secondary problem-btn" data-problem="Пигментация">Пигментация</button>
+          <button class="btn-secondary problem-btn" data-problem="Жирность">Жирность</button>
+          <button class="btn-secondary problem-btn" data-problem="Расширенные поры">Расширенные поры</button>
+          <button class="btn-secondary problem-btn" data-problem="Признаки старения">Признаки старения</button>
+          <button class="btn-secondary problem-btn" data-problem="Чувствительность">Чувствительность</button>
+        </div>
+        <button id="btn-problems-next" class="btn-primary">Продолжить</button>
+      </div>
+
+      <div id="screen-goals" class="app-screen" style="display:none;">
+        <div class="subtitle">Какие у тебя цели в уходе?</div>
+        <div class="goals-list">
+          <button class="btn-secondary goal-btn" data-goal="Увлажнение">Увлажнение</button>
+          <button class="btn-secondary goal-btn" data-goal="Борьба с акне">Борьба с акне</button>
+          <button class="btn-secondary goal-btn" data-goal="Избавление от морщин">Избавление от морщин</button>
+          <button class="btn-secondary goal-btn" data-goal="Осветление пигментации">Осветление пигментации</button>
+          <button class="btn-secondary goal-btn" data-goal="Успокоение кожи">Успокоение кожи</button>
+          <button class="btn-secondary goal-btn" data-goal="Матирование">Матирование</button>
+          <button class="btn-secondary goal-btn" data-goal="Общее улучшение кожи">Общее улучшение кожи</button>
+        </div>
+        <button id="btn-goals-next" class="btn-primary">Продолжить</button>
+      </div>
+
+      <div id="screen-steps" class="app-screen" style="display:none;">
+        <div class="subtitle">Сколько ступеней ухода предпочитаешь?</div>
+        <button class="btn-primary steps-btn" data-steps="3">Минимальный (3 шага)</button>
+        <button class="btn-primary steps-btn" data-steps="5">Стандартный (5 шагов)</button>
+        <button class="btn-primary steps-btn" data-steps="7">Расширенный (7+ шагов)</button>
+      </div>
+
+      <div id="screen-country" class="app-screen" style="display:none;">
+        <div class="subtitle">Какие страны-производители косметики предпочитаешь?</div>
+        <button class="btn-primary country-btn" data-country="Нет предпочтений">Нет предпочтений</button>
+        <button class="btn-primary country-btn" data-country="Корейская">Корейская</button>
+        <button class="btn-primary country-btn" data-country="Европейская">Европейская</button>
+        <button class="btn-primary country-btn" data-country="Российская">Российская</button>
+      </div>
+
+      <div id="screen-budget" class="app-screen" style="display:none;">
+        <div class="subtitle">Какой бюджет на уход?</div>
+        <button class="btn-primary budget-btn" data-budget="До 1000 ₽">До 1000 ₽</button>
+        <button class="btn-primary budget-btn" data-budget="1000-3000 ₽">1000-3000 ₽</button>
+        <button class="btn-primary budget-btn" data-budget="Выше 3000 ₽">Выше 3000 ₽</button>
+      </div>
+
+      <div id="screen-loading" class="app-screen" style="display:none;">
+        <div class="subtitle">Подбираем уход...</div>
+        <div class="loader"></div>
+      </div>
+
       <!-- Текущий день -->
       <div class="today-section">
         <h2>Сегодня</h2>
