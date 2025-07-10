@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const email = document.getElementById('reg-email').value.trim();
       const password = document.getElementById('reg-password').value;
       if (!name || !email || !password) {
-        alert('Пожалуйста, заполните все поля!');
+        showMessage('Пожалуйста, заполните все поля!', 'error');
         return;
       }
       try {
@@ -72,10 +72,10 @@ document.addEventListener('DOMContentLoaded', function() {
           screenRegister.style.display = 'none';
           screenSelfie.style.display = 'flex';
         } else {
-          alert('Ошибка регистрации: ' + (data.error || 'Попробуйте позже.'));
+          showMessage('Ошибка регистрации: ' + (data.error || 'Попробуйте позже.'), 'error');
         }
       } catch (e) {
-        alert('Ошибка соединения с сервером.');
+        showMessage('Ошибка соединения с сервером.', 'error');
       }
     });
   }
@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
           selfieVideo.style.display = 'block';
           selfiePlaceholder.style.display = 'none';
         } catch (e) {
-          alert('Не удалось получить доступ к камере');
+          showMessage('Не удалось получить доступ к камере', 'error');
           return;
         }
       } else {
@@ -120,10 +120,10 @@ document.addEventListener('DOMContentLoaded', function() {
           });
           const data = await res.json();
           if (data.status === 'ok') {
-            alert('Фото успешно сохранено!');
+            showMessage('Фото успешно сохранено!', 'success');
             onSelfieSuccess();
           } else {
-            alert('Ошибка загрузки фото: ' + (data.error || 'Попробуйте позже.'));
+            showMessage('Ошибка загрузки фото: ' + (data.error || 'Попробуйте позже.'), 'error');
           }
         }, 'image/jpeg', 0.95);
       }
@@ -143,10 +143,10 @@ document.addEventListener('DOMContentLoaded', function() {
       });
       const data = await res.json();
       if (data.status === 'ok') {
-        alert('Фото успешно сохранено!');
+        showMessage('Фото успешно сохранено!', 'success');
         onSelfieSuccess();
       } else {
-        alert('Ошибка загрузки фото: ' + (data.error || 'Попробуйте позже.'));
+        showMessage('Ошибка загрузки фото: ' + (data.error || 'Попробуйте позже.'), 'error');
       }
     });
   }
@@ -325,3 +325,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Удалён обработчик для кнопки 'Посмотреть подбор', теперь она не выполняет никаких действий
 });
+
+// Функция для показа сообщений пользователю
+function showMessage(text, type = 'info') {
+  let msg = document.getElementById('message');
+  if (!msg) {
+    msg = document.createElement('div');
+    msg.id = 'message';
+    msg.style.position = 'fixed';
+    msg.style.top = '24px';
+    msg.style.left = '50%';
+    msg.style.transform = 'translateX(-50%)';
+    msg.style.zIndex = '9999';
+    msg.style.padding = '12px 24px';
+    msg.style.borderRadius = '8px';
+    msg.style.background = type === 'error' ? '#ffdddd' : '#eafffa';
+    msg.style.color = '#222';
+    msg.style.fontWeight = '500';
+    msg.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+    document.body.appendChild(msg);
+  }
+  msg.textContent = text;
+  msg.style.display = 'block';
+  setTimeout(() => { msg.style.display = 'none'; }, 2500);
+}
