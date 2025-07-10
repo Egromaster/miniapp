@@ -2,13 +2,25 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Smooth — Telegram Mini App</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    /* Fallback стили на случай, если основной CSS не загрузится */
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #eafffa;
+      color: #222;
+    }
+    .logo-smooth {
+      font-family: 'Pacifico', cursive, 'Segoe UI', Arial, sans-serif;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
