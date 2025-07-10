@@ -364,6 +364,219 @@ function changeMonth(direction) {
   saveData();
 }
 
+// === Telegram Mini App: Мультиэкранная логика ===
+
+let userEmail = null;
+let userData = {};
+
+function showScreen(id) {
+  document.querySelectorAll('.app-screen').forEach(div => {
+    div.style.display = 'none';
+  });
+  const el = document.getElementById(id);
+  if (el) el.style.display = '';
+}
+
+// Показать welcome при старте
+showScreen('screen-welcome');
+
+// Welcome: переходы
+const btnRegister = document.getElementById('btn-register');
+const btnLogin = document.getElementById('btn-login');
+if (btnRegister) btnRegister.onclick = () => showScreen('screen-register');
+if (btnLogin) btnLogin.onclick = () => showScreen('screen-login');
+
+// Регистрация
+const btnDoRegister = document.getElementById('btn-do-register');
+if (btnDoRegister) btnDoRegister.onclick = async () => {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+  if (!name || !email || !password) {
+    alert('Заполните все поля!');
+    return;
+  }
+  const res = await fetch('/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, email, password })
+  });
+  const data = await res.json();
+  if (data.status === 'ok') {
+    userEmail = email;
+    userData = { email };
+    showScreen('screen-selfie');
+  } else {
+    alert(data.message || 'Ошибка регистрации');
+  }
+};
+
+// Вход
+const btnDoLogin = document.getElementById('btn-do-login');
+if (btnDoLogin) btnDoLogin.onclick = async () => {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!email || !password) {
+    alert('Заполните все поля!');
+    return;
+  }
+  const res = await fetch('/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+  const data = await res.json();
+  if (data.status === 'ok') {
+    userEmail = email;
+    userData = { email };
+    showScreen('screen-selfie');
+  } else {
+    alert(data.message || 'Ошибка входа');
+  }
+};
+
+// Селфи (пока только переход)
+const btnTakeSelfie = document.getElementById('btn-take-selfie');
+const btnSkipSelfie = document.getElementById('btn-skip-selfie');
+if (btnTakeSelfie) btnTakeSelfie.onclick = () => showScreen('screen-gender');
+if (btnSkipSelfie) btnSkipSelfie.onclick = () => showScreen('screen-gender');
+
+// Пол
+Array.from(document.getElementsByClassName('gender-btn')).forEach(btn => {
+  btn.onclick = async () => {
+    userData.gender = btn.dataset.gender;
+    await fetch('/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: userEmail, gender: userData.gender })
+    });
+    showScreen('screen-age');
+  };
+});
+
+// Возраст
+Array.from(document.getElementsByClassName('age-btn')).forEach(btn => {
+  btn.onclick = async () => {
+    userData.age = btn.dataset.age;
+    await fetch('/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: userEmail, age: userData.age })
+    });
+    showScreen('screen-skin');
+  };
+});
+
+// Тип кожи
+Array.from(document.getElementsByClassName('skin-btn')).forEach(btn => {
+  btn.onclick = async () => {
+    userData.skin_type = btn.dataset.skin;
+    await fetch('/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: userEmail, skin_type: userData.skin_type })
+    });
+    showScreen('screen-problems');
+  };
+});
+
+// Проблемы кожи (мультивыбор)
+let selectedProblems = [];
+Array.from(document.getElementsByClassName('problem-btn')).forEach(btn => {
+  btn.onclick = () => {
+    const val = btn.dataset.problem;
+    if (selectedProblems.includes(val)) {
+      selectedProblems = selectedProblems.filter(p => p !== val);
+      btn.classList.remove('selected');
+    } else {
+      selectedProblems.push(val);
+      btn.classList.add('selected');
+    }
+  };
+});
+const btnProblemsNext = document.getElementById('btn-problems-next');
+if (btnProblemsNext) btnProblemsNext.onclick = async () => {
+  userData.problems = selectedProblems.join(', ');
+  await fetch('/update', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: userEmail, problems: userData.problems })
+  });
+  showScreen('screen-goals');
+};
+
+// Цели ухода (мультивыбор)
+let selectedGoals = [];
+Array.from(document.getElementsByClassName('goal-btn')).forEach(btn => {
+  btn.onclick = () => {
+    const val = btn.dataset.goal;
+    if (selectedGoals.includes(val)) {
+      selectedGoals = selectedGoals.filter(g => g !== val);
+      btn.classList.remove('selected');
+    } else {
+      selectedGoals.push(val);
+      btn.classList.add('selected');
+    }
+  };
+});
+const btnGoalsNext = document.getElementById('btn-goals-next');
+if (btnGoalsNext) btnGoalsNext.onclick = async () => {
+  userData.goals = selectedGoals.join(', ');
+  await fetch('/update', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: userEmail, goals: userData.goals })
+  });
+  showScreen('screen-steps');
+};
+
+// Количество шагов
+Array.from(document.getElementsByClassName('steps-btn')).forEach(btn => {
+  btn.onclick = async () => {
+    userData.steps = btn.dataset.steps;
+    await fetch('/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: userEmail, steps: userData.steps })
+    });
+    showScreen('screen-country');
+  };
+});
+
+// Страна
+Array.from(document.getElementsByClassName('country-btn')).forEach(btn => {
+  btn.onclick = async () => {
+    userData.country = btn.dataset.country;
+    await fetch('/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: userEmail, country: userData.country })
+    });
+    showScreen('screen-budget');
+  };
+});
+
+// Бюджет
+Array.from(document.getElementsByClassName('budget-btn')).forEach(btn => {
+  btn.onclick = async () => {
+    userData.budget = btn.dataset.budget;
+    await fetch('/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: userEmail, budget: userData.budget })
+    });
+    showScreen('screen-loading');
+    setTimeout(() => {
+      // После "подбора" показать календарь
+      document.querySelectorAll('.app-screen').forEach(div => div.style.display = 'none');
+      document.querySelector('.today-section').style.display = '';
+      document.querySelector('.calendar-section').style.display = '';
+      document.querySelector('.add-procedure-section').style.display = '';
+      document.querySelector('.stats-section').style.display = '';
+    }, 1500);
+  };
+});
+
 // Инициализация приложения
 function init() {
   loadData();
