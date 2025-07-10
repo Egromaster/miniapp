@@ -439,3 +439,142 @@ body {
   background: var(--tg-theme-button-color, linear-gradient(135deg, #667eea, #764ba2));
   color: var(--tg-theme-button-text-color, white);
 } 
+
+/* --- Telegram Mini App: новые экраны и стили --- */
+.app-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  background: #eafcff;
+  border-radius: 18px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  padding: 32px 16px 24px 16px;
+  margin-bottom: 24px;
+}
+
+.logo {
+  font-family: 'Pacifico', cursive, sans-serif;
+  font-size: 38px;
+  color: #5ec6b3;
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px rgba(94,198,179,0.08);
+}
+
+.app-screen .subtitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.app-screen .desc {
+  font-size: 15px;
+  color: #4a4a4a;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.input-field {
+  width: 90%;
+  max-width: 320px;
+  margin: 8px 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #cce6e6;
+  font-size: 16px;
+  background: #f7fefe;
+  outline: none;
+  transition: border 0.2s;
+}
+.input-field:focus {
+  border: 1.5px solid #5ec6b3;
+}
+
+.btn-primary {
+  width: 90%;
+  max-width: 320px;
+  margin: 10px 0 0 0;
+  padding: 13px 0;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #7f8ce3 0%, #5ec6b3 100%);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(94,198,179,0.08);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.btn-primary:hover, .btn-primary.selected {
+  background: linear-gradient(90deg, #5ec6b3 0%, #7f8ce3 100%);
+  box-shadow: 0 4px 16px rgba(94,198,179,0.13);
+}
+
+.btn-secondary {
+  width: 90%;
+  max-width: 320px;
+  margin: 10px 0 0 0;
+  padding: 13px 0;
+  border: none;
+  border-radius: 12px;
+  background: #fff;
+  color: #5ec6b3;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid #5ec6b3;
+  transition: background 0.2s, color 0.2s;
+}
+.btn-secondary:hover, .btn-secondary.selected {
+  background: #e0f7f3;
+  color: #3a8d7c;
+}
+
+.selected {
+  outline: 2.5px solid #7f8ce3 !important;
+  background: linear-gradient(90deg, #e0f7f3 0%, #eafcff 100%) !important;
+  color: #222 !important;
+}
+
+.selfie-tips {
+  font-size: 14px;
+  color: #4a4a4a;
+  margin: 10px 0 18px 0;
+  text-align: left;
+}
+
+.loader {
+  border: 6px solid #eafcff;
+  border-top: 6px solid #5ec6b3;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  animation: spin 1s linear infinite;
+  margin: 32px auto 0 auto;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 480px) {
+  .container {
+    min-width: 100vw;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .app-screen {
+    min-height: 90vh;
+    padding: 18px 4px 18px 4px;
+    margin-bottom: 0;
+    border-radius: 0;
+  }
+  .logo {
+    font-size: 30px;
+  }
+} 
+
