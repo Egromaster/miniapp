@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
   // Конфигурация API
-  const AMVERA_BASE_URL = 'https://miniapp1.amvera.app';
+  const AMVERA_BASE_URL = 'https://miniapp1-egromaster.amvera.io';
 
   const btnRegister = document.getElementById('btn-register');
   const screenWelcome = document.getElementById('screen-welcome');
@@ -301,10 +301,26 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   if (btnBudgetNext) {
-    btnBudgetNext.addEventListener('click', () => {
+    btnBudgetNext.addEventListener('click', async () => {
       currentUser.budget = selectedBudget;
-      // Здесь будет логика подбора продуктов
-      alert('Подбор продуктов будет доступен после анализа таблицы данных');
+      
+      // Отправляем все данные пользователя на сервер
+      try {
+        const res = await fetch(`${AMVERA_BASE_URL}/api/save_user_data`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(currentUser)
+        });
+        
+        const data = await res.json();
+        if (data.status === 'ok') {
+          alert('Данные успешно сохранены! Подбор продуктов будет доступен после анализа таблицы данных');
+        } else {
+          alert('Ошибка сохранения данных: ' + (data.error || 'Попробуйте позже.'));
+        }
+      } catch (e) {
+        alert('Ошибка соединения с сервером.');
+      }
     });
   }
 });
