@@ -288,6 +288,26 @@ body {
   background: #f0f4ff;
   color: #222;
 }
+.loading-screen {
+  background: #eafffa;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.loading-title {
+  font-size: 2em;
+  font-weight: bold;
+  margin: 32px 0 24px 0;
+  color: #222;
+  text-align: center;
+}
+#btn-show-result {
+  width: 90%;
+  max-width: 320px;
+  margin-top: 40px;
+}
 
 /* Дополнительные стили для мобильных устройств */
 @media (max-width: 480px) {
