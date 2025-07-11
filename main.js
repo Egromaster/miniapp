@@ -354,12 +354,31 @@ document.addEventListener('DOMContentLoaded', function() {
         benefits: Array.isArray(currentUser.goals) ? currentUser.goals.join(',') : ''
       });
       const apiUrl = 'https://script.google.com/macros/s/AKfycbxknsDDV0giZIWL96qqReHFq3fYDfL4861NphtBLLWgjGcLSvsiS36XLdITvH_mZOQo/exec';
+      const fullUrl = `${apiUrl}?${params}`;
+      console.log('API URL:', fullUrl);
+      console.log('Параметры запроса:', Object.fromEntries(params.entries()));
       let data = null;
       try {
-        const response = await fetch(`${apiUrl}?${params}`);
+        const response = await fetch(fullUrl);
         data = await response.json();
+        console.log('Ответ от API:', data);
+        if (data && data.routine) {
+          console.log('data.routine:', data.routine);
+          if (typeof data.routine !== 'object') {
+            console.warn('data.routine не является объектом!');
+          } else {
+            Object.keys(data.routine).forEach((key, idx) => {
+              if (!data.routine[key] || typeof data.routine[key].name === 'undefined') {
+                console.warn(`В шаге ${key} нет поля name!`, data.routine[key]);
+              }
+            });
+          }
+        } else {
+          console.warn('В ответе нет data.routine!');
+        }
       } catch (error) {
         data = null;
+        console.error('Ошибка запроса к API:', error);
       }
       screenLoading.style.display = 'none';
       screenResult.style.display = 'flex';
@@ -423,6 +442,10 @@ function showMessage(text, type = 'info') {
     msg.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
     document.body.appendChild(msg);
   }
+  msg.textContent = text;
+  msg.style.display = 'block';
+  setTimeout(() => { msg.style.display = 'none'; }, 2500);
+}
   msg.textContent = text;
   msg.style.display = 'block';
   setTimeout(() => { msg.style.display = 'none'; }, 2500);
