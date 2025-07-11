@@ -42,6 +42,9 @@ document.addEventListener('DOMContentLoaded', function() {
   const screenLoading = document.getElementById('screen-loading');
   const screenResult = document.getElementById('screen-result');
   const resultStepsList = document.getElementById('result-steps-list');
+  const btnLogin = document.getElementById('btn-login');
+  const screenLogin = document.getElementById('screen-login');
+  const btnLoginSubmit = document.getElementById('btn-login-submit');
 
   if (btnRegister && screenRegister && screenWelcome) {
     btnRegister.addEventListener('click', () => {
@@ -469,12 +472,27 @@ document.addEventListener('DOMContentLoaded', function() {
         title.style.marginBottom = '4px';
         title.textContent = product.name || 'Без названия';
         procDiv.appendChild(title);
-        // Этап
+        // Этап (переводим на русский)
         const stepLabel = document.createElement('div');
         stepLabel.style.fontSize = '0.97em';
         stepLabel.style.color = '#666';
         stepLabel.style.marginBottom = '6px';
-        stepLabel.textContent = `Этап: ${stepKey}`;
+        const stepTranslations = {
+          'cleansing': 'Очищение',
+          'toning': 'Тонизирование',
+          'serum': 'Сыворотка',
+          'moisturizing': 'Увлажнение',
+          'protection': 'Защита',
+          'exfoliation': 'Эксфолиация',
+          'mask': 'Маска',
+          'eye': 'Уход за глазами',
+          'treatment': 'Лечение',
+          'essence': 'Эссенция',
+          'oil': 'Масло',
+          'ampoule': 'Ампула',
+          'spot': 'Точечное средство'
+        };
+        stepLabel.textContent = `Этап: ${stepTranslations[stepKey] || stepKey}`;
         procDiv.appendChild(stepLabel);
         // Частота
         const freqLabel = document.createElement('label');
@@ -490,9 +508,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         procDiv.appendChild(freqLabel);
         procDiv.appendChild(freqSelect);
-        // Время суток (утро/вечер, чекбоксы)
+        // Время процедуры (утро/вечер, чекбоксы)
         const timeOfDayLabel = document.createElement('div');
-        timeOfDayLabel.textContent = 'Время приёма:';
+        timeOfDayLabel.textContent = 'Время процедуры:';
         timeOfDayLabel.style.margin = '8px 0 2px 0';
         timeOfDayLabel.style.fontSize = '1em';
         timeOfDayLabel.style.color = '#444';
@@ -743,7 +761,11 @@ document.addEventListener('DOMContentLoaded', function() {
     inner.className = 'calendar-day-detail-inner';
     const header = document.createElement('div');
     header.className = 'calendar-day-detail-header';
-    header.innerHTML = `<span>${day} ${getMonthNameRu(month)} ${year}</span>`;
+    // Форматируем дату как ДД.ММ.ГГГГ
+    const dayStr = String(day).padStart(2, '0');
+    const monthStr = String(month + 1).padStart(2, '0');
+    const dateStr = `${dayStr}.${monthStr}.${year}`;
+    header.innerHTML = `<span>${dateStr}</span>`;
     const closeBtn = document.createElement('button');
     closeBtn.className = 'calendar-day-detail-close-btn';
     closeBtn.innerHTML = '&times;';
@@ -755,10 +777,28 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!procs.length) {
       list.innerHTML = '<div style="color:#888;text-align:center;">Нет процедур</div>';
     } else {
+      // Словарь переводов этапов ухода
+      const stepTranslations = {
+        'cleansing': 'Очищение',
+        'toning': 'Тонизирование',
+        'serum': 'Сыворотка',
+        'moisturizing': 'Увлажнение',
+        'protection': 'Защита',
+        'exfoliation': 'Эксфолиация',
+        'mask': 'Маска',
+        'eye': 'Уход за глазами',
+        'treatment': 'Лечение',
+        'essence': 'Эссенция',
+        'oil': 'Масло',
+        'ampoule': 'Ампула',
+        'spot': 'Точечное средство'
+      };
       procs.forEach(proc => {
         const item = document.createElement('div');
         item.style.marginBottom = '10px';
-        item.innerHTML = `<b>${proc.product}</b><br>Этап: ${proc.step}<br>Частота: ${proc.freq}<br>Время: ${Array.isArray(proc.timeOfDay) ? proc.timeOfDay.join(', ') : proc.timeOfDay}`;
+        // Переводим этап на русский
+        const ruStep = stepTranslations[proc.step] || proc.step;
+        item.innerHTML = `<b>${proc.product}</b><br>Этап: ${ruStep}<br>Частота: ${proc.freq}<br>Время: ${Array.isArray(proc.timeOfDay) ? proc.timeOfDay.join(', ') : proc.timeOfDay}`;
         list.appendChild(item);
       });
     }
@@ -787,6 +827,57 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Удалён обработчик для кнопки 'Посмотреть подбор', теперь она не выполняет никаких действий
+  if (btnLogin && screenLogin) {
+    btnLogin.addEventListener('click', function() {
+      document.querySelectorAll('.app-screen').forEach(screen => screen.style.display = 'none');
+      screenLogin.style.display = 'flex';
+    });
+  }
+
+  if (btnLoginSubmit) {
+    btnLoginSubmit.addEventListener('click', async function() {
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      if (!email || !password) {
+        showMessage('Пожалуйста, введите почту и пароль', 'error');
+        return;
+      }
+      try {
+        const res = await fetch(`${AMVERA_BASE_URL}/api/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (data.status === 'ok') {
+          // Вход успешен, подгружаем процедуры пользователя
+          let userProcedures = [];
+          try {
+            const procRes = await fetch(`${AMVERA_BASE_URL}/api/get_procedures`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email })
+            });
+            const procData = await procRes.json();
+            if (procData.status === 'ok' && Array.isArray(procData.procedures)) {
+              userProcedures = procData.procedures;
+            }
+          } catch (e) {}
+          calendarProcedures = userProcedures;
+          document.querySelectorAll('.app-screen').forEach(screen => screen.style.display = 'none');
+          if (calendarViewModal) {
+            calendarViewModal.style.display = 'flex';
+            const now = new Date();
+            renderMonthCalendar(now.getFullYear(), now.getMonth());
+          }
+        } else {
+          showMessage('Неверная почта или пароль', 'error');
+        }
+      } catch (e) {
+        showMessage('Ошибка соединения с сервером', 'error');
+      }
+    });
+  }
 });
 
 // Обработчик для ссылки на политику конфиденциальности (регистрация)
