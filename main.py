@@ -1,3 +1,4 @@
+# ========== FLASK BACKEND ==========
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
@@ -6,14 +7,14 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 CORS(app)
 
-user_data = []  # Хранилище для полных данных пользователей
+user_data = []
 UPLOAD_FOLDER = 'uploads'
-MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 МБ
+MAX_FILE_SIZE = 5 * 1024 * 1024
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -32,7 +33,6 @@ def register():
     password = data.get('password')
     if not name or not email or not password:
         return jsonify({'status': 'error', 'error': 'Все поля обязательны!'}), 400
-    # Проверка на уникальность email по user_data
     for user in user_data:
         if user.get('email', '').lower() == email.lower():
             return jsonify({'status': 'error', 'error': 'Пользователь с такой почтой уже существует!'}), 400
@@ -71,7 +71,6 @@ def upload_selfie():
         email = request.form.get('email')
         if not email:
             return jsonify({'status': 'error', 'error': 'Email обязателен'}), 400
-        # Проверяем, что email уже зарегистрирован
         if not any(user.get('email') == email for user in user_data):
             return jsonify({'status': 'error', 'error': 'Пользователь с таким email не найден'}), 400
         if file.filename == '' or file.filename is None:
@@ -94,8 +93,49 @@ def upload_selfie():
 
 @app.route('/api/get_user_data', methods=['GET'])
 def get_user_data():
-    """Получить все данные пользователей (для отладки)"""
     return jsonify({'status': 'ok', 'data': user_data})
 
+
+# ========== TELEGRAM BOT ==========
+import asyncio
+import threading
+from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update
+from telegram.ext import Application, CommandHandler, ContextTypes
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    welcome_text = """
+👋 Привет!  
+
+Добро пожаловать в Smooth — твой персональный мобильный помощник по уходу за кожей.  
+
+Здесь ты можешь:  
+
+✅ Получить персональную подборку уходовых средств  
+✅ Создать календарь ухода с напоминаниями  
+✅ Отслеживать эффективность уходовых продуктов  
+✅ Анализировать изменения кожи лица с AI-помощником  
+
+Нажми кнопку ниже, чтобы начать! ⤵️
+    """
+    keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("Открыть приложение", url="https://t.me/firstttttttttry_bot?start=profile")]
+    ])
+    if update.message:
+        await update.message.reply_text(text=welcome_text, parse_mode="Markdown", reply_markup=keyboard)
+
+async def run_telegram_bot():
+    app = Application.builder().token("8132654578:AAGcsxU2KqXJG9OwrSc0NA2rrqe_bYbmqc8").build()
+    app.add_handler(CommandHandler("start", start))
+    print("Telegram бот запущен...")
+    await app.run_polling()
+
+def run_bot_thread():
+    asyncio.run(run_telegram_bot())
+
+# ========== ЗАПУСК ВСЕГО ==========
 if __name__ == '__main__':
+    # Запускаем Telegram-бота в отдельном потоке
+    threading.Thread(target=run_bot_thread).start()
+    
+    # Запускаем Flask-сервер (основной поток)
     app.run(debug=True, host='0.0.0.0', port=80)
