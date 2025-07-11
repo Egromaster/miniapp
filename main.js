@@ -388,6 +388,8 @@ document.addEventListener('DOMContentLoaded', function() {
       };
       if (data && data.success && data.routine && Object.keys(data.routine).length > 0) {
         const stepsList = Object.keys(data.routine);
+        lastRoutineData = data.routine;
+        lastRoutineSteps = stepsList;
         for (let i = 0; i < stepsCount; i++) {
           const stepKey = stepsList[i] || '';
           const product = data.routine[stepKey] || {};
@@ -429,6 +431,92 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  // --- Календарь: модальное окно ---
+  const btnAddToCalendar = document.getElementById('btn-add-to-calendar');
+  const calendarModal = document.getElementById('calendar-modal');
+  const calendarProceduresList = document.getElementById('calendar-procedures-list');
+  const calendarForm = document.getElementById('calendar-form');
+
+  let lastRoutineData = null;
+  let lastRoutineSteps = null;
+
+  if (btnAddToCalendar) {
+    btnAddToCalendar.addEventListener('click', () => {
+      // Получаем данные из последнего подбора
+      if (!lastRoutineData || !lastRoutineSteps) return;
+      // Очищаем список процедур
+      calendarProceduresList.innerHTML = '';
+      lastRoutineSteps.forEach((stepKey, i) => {
+        const product = lastRoutineData[stepKey] || {};
+        const procDiv = document.createElement('div');
+        procDiv.className = 'calendar-procedure-block';
+        procDiv.style.marginBottom = '18px';
+        // Название процедуры (название продукта)
+        const title = document.createElement('div');
+        title.style.fontWeight = '600';
+        title.style.marginBottom = '4px';
+        title.textContent = product.name || 'Без названия';
+        procDiv.appendChild(title);
+        // Этап
+        const stepLabel = document.createElement('div');
+        stepLabel.style.fontSize = '0.97em';
+        stepLabel.style.color = '#666';
+        stepLabel.style.marginBottom = '6px';
+        stepLabel.textContent = `Этап: ${stepKey}`;
+        procDiv.appendChild(stepLabel);
+        // Частота
+        const freqLabel = document.createElement('label');
+        freqLabel.textContent = 'Частота:';
+        freqLabel.style.marginRight = '8px';
+        const freqSelect = document.createElement('select');
+        freqSelect.name = `freq_${i}`;
+        ['Каждый день','Через день','2 раза в неделю','1 раз в неделю'].forEach(opt => {
+          const o = document.createElement('option');
+          o.value = opt;
+          o.textContent = opt;
+          freqSelect.appendChild(o);
+        });
+        procDiv.appendChild(freqLabel);
+        procDiv.appendChild(freqSelect);
+        // Время
+        const timeLabel = document.createElement('label');
+        timeLabel.textContent = ' Время:';
+        timeLabel.style.marginLeft = '12px';
+        const timeInput = document.createElement('input');
+        timeInput.type = 'time';
+        timeInput.name = `time_${i}`;
+        timeInput.required = true;
+        timeInput.style.marginLeft = '4px';
+        procDiv.appendChild(timeLabel);
+        procDiv.appendChild(timeInput);
+        calendarProceduresList.appendChild(procDiv);
+      });
+      calendarModal.style.display = 'flex';
+    });
+  }
+
+  if (calendarForm) {
+    calendarForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      // Собираем данные по всем процедурам
+      const formData = new FormData(calendarForm);
+      const result = [];
+      if (!lastRoutineSteps) return;
+      lastRoutineSteps.forEach((stepKey, i) => {
+        result.push({
+          step: stepKey,
+          product: lastRoutineData[stepKey]?.name || '',
+          freq: formData.get(`freq_${i}`),
+          time: formData.get(`time_${i}`)
+        });
+      });
+      // Пока просто выводим в консоль
+      console.log('Сохранить в календарь:', result);
+      // Здесь будет логика сохранения в календарь
+      calendarModal.style.display = 'none';
+    });
+  }
+
   // Удалён обработчик для кнопки 'Посмотреть подбор', теперь она не выполняет никаких действий
 });
 
@@ -466,4 +554,5 @@ function showMessage(text, type = 'info') {
   msg.style.display = 'block';
   setTimeout(() => { msg.style.display = 'none'; }, 2500);
 }
+
 
