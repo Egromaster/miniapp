@@ -561,6 +561,22 @@ document.addEventListener('DOMContentLoaded', function() {
       calendarViewList.innerHTML = '<div style="text-align:center;color:#888;">Нет процедур</div>';
       return;
     }
+    // Словарь переводов этапов ухода (stepKey)
+    const stepTranslations = {
+      'cleansing': 'Очищение',
+      'toning': 'Тонизирование',
+      'serum': 'Сыворотка',
+      'moisturizing': 'Увлажнение',
+      'protection': 'Защита',
+      'exfoliation': 'Эксфолиация',
+      'mask': 'Маска',
+      'eye': 'Уход за глазами',
+      'treatment': 'Лечение',
+      'essence': 'Эссенция',
+      'oil': 'Масло',
+      'ampoule': 'Ампула',
+      'spot': 'Точечное средство'
+    };
     calendarProcedures.forEach(proc => {
       const item = document.createElement('div');
       item.className = 'calendar-view-item';
@@ -570,7 +586,8 @@ document.addEventListener('DOMContentLoaded', function() {
       item.appendChild(title);
       const step = document.createElement('div');
       step.className = 'calendar-view-step';
-      step.textContent = `Этап: ${proc.step}`;
+      const ruStep = stepTranslations[proc.step] || proc.step;
+      step.textContent = `Этап: ${ruStep}`;
       item.appendChild(step);
       const freq = document.createElement('div');
       freq.className = 'calendar-view-freq';
@@ -588,6 +605,184 @@ document.addEventListener('DOMContentLoaded', function() {
     btnCloseCalendarView.addEventListener('click', function() {
       calendarViewModal.style.display = 'none';
     });
+  }
+
+  // --- Календарь: JS-логика для календаря месяца ---
+  const calendarMonthView = document.getElementById('calendar-month-view');
+  const calendarDayDetail = document.getElementById('calendar-day-detail');
+
+  let calendarCurrentMonth = null;
+  let calendarCurrentYear = null;
+
+  function getMonthNameRu(monthIdx) {
+    return ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'][monthIdx];
+  }
+
+  function renderMonthCalendar(year, month) {
+    if (!calendarMonthView) return;
+    calendarMonthView.innerHTML = '';
+    // Header
+    const header = document.createElement('div');
+    header.className = 'calendar-header';
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'calendar-nav-btn';
+    prevBtn.innerHTML = '&#8592;';
+    prevBtn.onclick = () => renderMonthCalendar(month === 0 ? year-1 : year, month === 0 ? 11 : month-1);
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'calendar-nav-btn';
+    nextBtn.innerHTML = '&#8594;';
+    nextBtn.onclick = () => renderMonthCalendar(month === 11 ? year+1 : year, month === 11 ? 0 : month+1);
+    const label = document.createElement('span');
+    label.textContent = `${getMonthNameRu(month)} ${year}`;
+    header.appendChild(prevBtn);
+    header.appendChild(label);
+    header.appendChild(nextBtn);
+    calendarMonthView.appendChild(header);
+    // Days of week
+    const daysRow = document.createElement('div');
+    daysRow.className = 'calendar-grid';
+    ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].forEach(d => {
+      const cell = document.createElement('div');
+      cell.style.fontWeight = '600';
+      cell.style.color = '#888';
+      cell.textContent = d;
+      daysRow.appendChild(cell);
+    });
+    calendarMonthView.appendChild(daysRow);
+    // Dates grid
+    const grid = document.createElement('div');
+    grid.className = 'calendar-grid';
+    const firstDay = new Date(year, month, 1);
+    let startIdx = (firstDay.getDay() + 6) % 7; // Пн=0
+    const daysInMonth = new Date(year, month+1, 0).getDate();
+    const today = new Date();
+    // Собираем процедуры по датам
+    const procsByDate = {};
+    if (calendarProcedures && calendarProcedures.length) {
+      calendarProcedures.forEach(proc => {
+        // Для примера: все процедуры добавляются на каждый день месяца согласно частоте и времени суток
+        // (реализация частоты: только "Каждый день" и "2 раза в день" — каждый день, остальные — через день/раз в неделю и т.д.)
+        let days = [];
+        if (proc.freq === 'Каждый день' || proc.freq === '2 раза в день') {
+          for (let d = 1; d <= daysInMonth; d++) days.push(d);
+        } else if (proc.freq === 'Через день') {
+          for (let d = 1; d <= daysInMonth; d+=2) days.push(d);
+        } else if (proc.freq === '2 раза в неделю') {
+          for (let d = 1; d <= daysInMonth; d++) if ([1,4].includes(new Date(year, month, d).getDay())) days.push(d); // Пн, Чт
+        } else if (proc.freq === '1 раз в неделю') {
+          for (let d = 1; d <= daysInMonth; d++) if (new Date(year, month, d).getDay() === 1) days.push(d); // Пн
+        }
+        days.forEach(d => {
+          const key = d;
+          if (!procsByDate[key]) procsByDate[key] = [];
+          procsByDate[key].push(proc);
+        });
+      });
+    }
+    // Пустые ячейки до первого дня месяца
+    for (let i = 0; i < startIdx; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'calendar-cell';
+      cell.style.background = 'none';
+      cell.style.cursor = 'default';
+      grid.appendChild(cell);
+    }
+    // Дни месяца
+    for (let d = 1; d <= daysInMonth; d++) {
+      const cell = document.createElement('div');
+      cell.className = 'calendar-cell';
+      if (today.getFullYear() === year && today.getMonth() === month && today.getDate() === d) {
+        cell.classList.add('today');
+      }
+      cell.textContent = d;
+      // Если есть процедуры — показываем краткие названия
+      if (procsByDate[d] && procsByDate[d].length) {
+        // Получаем переводы этапов
+        const stepTranslations = {
+          'cleansing': 'Очищение',
+          'toning': 'Тонизирование',
+          'serum': 'Сыворотка',
+          'moisturizing': 'Увлажнение',
+          'protection': 'Защита',
+          'exfoliation': 'Эксфолиация',
+          'mask': 'Маска',
+          'eye': 'Уход за глазами',
+          'treatment': 'Лечение',
+          'essence': 'Эссенция',
+          'oil': 'Масло',
+          'ampoule': 'Ампула',
+          'spot': 'Точечное средство'
+        };
+        // Собираем уникальные этапы процедур на этот день
+        const shortNames = procsByDate[d].map(proc => stepTranslations[proc.step] || proc.step);
+        // Оставляем максимум 2–3 названия, остальное — многоточие
+        let displayNames = shortNames.slice(0, 3).join(', ');
+        if (shortNames.length > 3) displayNames += ', ...';
+        const procSpan = document.createElement('span');
+        procSpan.className = 'calendar-proc-short';
+        procSpan.textContent = displayNames;
+        procSpan.style.display = 'block';
+        procSpan.style.fontSize = '0.75em';
+        procSpan.style.color = '#4ecdc4';
+        procSpan.style.marginTop = '2px';
+        cell.appendChild(procSpan);
+      }
+      cell.onclick = () => showDayDetail(year, month, d, procsByDate[d] || []);
+      grid.appendChild(cell);
+    }
+    calendarMonthView.appendChild(grid);
+    calendarCurrentMonth = month;
+    calendarCurrentYear = year;
+  }
+
+  function showDayDetail(year, month, day, procs) {
+    if (!calendarDayDetail) return;
+    calendarDayDetail.innerHTML = '';
+    const inner = document.createElement('div');
+    inner.className = 'calendar-day-detail-inner';
+    const header = document.createElement('div');
+    header.className = 'calendar-day-detail-header';
+    header.innerHTML = `<span>${day} ${getMonthNameRu(month)} ${year}</span>`;
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'calendar-day-detail-close-btn';
+    closeBtn.innerHTML = '&times;';
+    closeBtn.onclick = () => { calendarDayDetail.style.display = 'none'; };
+    header.appendChild(closeBtn);
+    inner.appendChild(header);
+    const list = document.createElement('div');
+    list.className = 'calendar-day-detail-list';
+    if (!procs.length) {
+      list.innerHTML = '<div style="color:#888;text-align:center;">Нет процедур</div>';
+    } else {
+      procs.forEach(proc => {
+        const item = document.createElement('div');
+        item.style.marginBottom = '10px';
+        item.innerHTML = `<b>${proc.product}</b><br>Этап: ${proc.step}<br>Частота: ${proc.freq}<br>Время: ${Array.isArray(proc.timeOfDay) ? proc.timeOfDay.join(', ') : proc.timeOfDay}`;
+        list.appendChild(item);
+      });
+    }
+    inner.appendChild(list);
+    calendarDayDetail.appendChild(inner);
+    calendarDayDetail.style.display = 'flex';
+  }
+
+  // Открывать календарь на текущем месяце при открытии окна
+  if (calendarViewModal) {
+    calendarViewModal.addEventListener('show', () => {
+      const now = new Date();
+      renderMonthCalendar(now.getFullYear(), now.getMonth());
+    });
+  }
+  // Автоматически рендерить при открытии окна
+  if (calendarViewModal) {
+    const origDisplay = calendarViewModal.style.display;
+    const observer = new MutationObserver(() => {
+      if (calendarViewModal.style.display === 'flex') {
+        const now = new Date();
+        renderMonthCalendar(now.getFullYear(), now.getMonth());
+      }
+    });
+    observer.observe(calendarViewModal, { attributes: true, attributeFilter: ['style'] });
   }
 
   // Удалён обработчик для кнопки 'Посмотреть подбор', теперь она не выполняет никаких действий
