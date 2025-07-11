@@ -353,7 +353,7 @@ document.addEventListener('DOMContentLoaded', function() {
         step: stepsCount,
         benefits: Array.isArray(currentUser.goals) ? currentUser.goals.join(',') : ''
       });
-      const apiUrl = 'https://script.google.com/macros/u/1/s/AKfycbzszgod0MpGwWlJiAJWtfIngy28M5gdijWNKF4uXGrDSgZMmkeZfb2MLxKqJ8XATo8_gA/exec?skin_type=dry&benefits=hydration&country=корейская&price=1000-3000&step=5';
+      const apiUrl = 'https://script.google.com/macros/s/AKfycbzszgod0MpGwWlJiAJWtfIngy28M5gdijWNKF4uXGrDSgZMmkeZfb2MLxKqJ8XATo8_gA/exec?';
       const fullUrl = `${apiUrl}?${params}`;
       let data = null;
       try {
@@ -424,9 +424,6 @@ function showMessage(text, type = 'info') {
     msg.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
     document.body.appendChild(msg);
   }
-  msg.textContent = text;
-  msg.style.display = 'block';
-  setTimeout(() => { msg.style.display = 'none'; }, 2500);
   msg.textContent = text;
   msg.style.display = 'block';
   setTimeout(() => { msg.style.display = 'none'; }, 2500);
