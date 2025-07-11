@@ -1,3 +1,4 @@
+
 body {
   margin: 0;
   font-family: 'Segoe UI', Arial, sans-serif;
@@ -395,5 +396,122 @@ body {
   margin-top: 24px;
   margin-bottom: 24px;
 }
-
-
+.calendar-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.25);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+}
+.calendar-modal-content {
+  background: #eafffa;
+  border-radius: 18px;
+  max-width: 420px;
+  width: 95vw;
+  padding: 28px 18px 20px 18px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.calendar-modal-title {
+  font-size: 1.25em;
+  font-weight: 600;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #222;
+}
+.calendar-procedure-block {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 16px 12px 14px 12px;
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.calendar-procedure-block > div:first-child {
+  font-weight: 600;
+  font-size: 1.08em;
+  margin-bottom: 2px;
+}
+.calendar-procedure-block label {
+  font-size: 1em;
+  color: #444;
+  margin-bottom: 2px;
+}
+.calendar-procedure-block select,
+.calendar-procedure-block input[type="time"] {
+  width: 100%;
+  padding: 10px;
+  border: 1.5px solid #4ecdc4;
+  border-radius: 8px;
+  font-size: 1em;
+  margin-top: 4px;
+  margin-bottom: 6px;
+  background: #f7f7f7;
+  color: #222;
+  box-sizing: border-box;
+  outline: none;
+  transition: border 0.2s;
+}
+.calendar-procedure-block select:focus,
+.calendar-procedure-block input[type="time"]:focus {
+  border-color: #7f7fd5;
+}
+#btn-save-calendar {
+  width: 100%;
+  margin-top: 18px;
+  font-size: 1.1em;
+  padding: 14px;
+}
+@media (max-width: 480px) {
+  .calendar-modal-content {
+    padding: 16px 4px 12px 4px;
+    max-width: 99vw;
+  }
+  .calendar-procedure-block {
+    padding: 10px 4px 10px 4px;
+  }
+}
+.calendar-view-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 8px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.calendar-view-item {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 14px 12px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.calendar-view-item .calendar-view-title {
+  font-weight: 600;
+  font-size: 1.08em;
+  margin-bottom: 2px;
+}
+.calendar-view-item .calendar-view-step {
+  font-size: 0.97em;
+  color: #666;
+}
+.calendar-view-item .calendar-view-time {
+  font-size: 1em;
+  color: #4ecdc4;
+  margin-bottom: 2px;
+}
+.calendar-view-item .calendar-view-freq {
+  font-size: 0.97em;
+  color: #888;
+}
