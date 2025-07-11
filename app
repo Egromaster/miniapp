@@ -27,7 +27,7 @@ async def start(update, context):
     )
 
 async def main():
-    application = Application.builder().token("YOUR_TELEGRAM_BOT_TOKEN").build()
+    application = Application.builder().token("8132654578:AAGcsxU2KqXJG9OwrSc0NA2rrqe_bYbmqc8").build()
     application.add_handler(CommandHandler("start", start))
     await application.run_polling()
 
