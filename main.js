@@ -470,7 +470,7 @@ document.addEventListener('DOMContentLoaded', function() {
         freqLabel.style.marginRight = '8px';
         const freqSelect = document.createElement('select');
         freqSelect.name = `freq_${i}`;
-        ['Каждый день','Через день','2 раза в неделю','1 раз в неделю'].forEach(opt => {
+        ['Каждый день','Через день','2 раза в неделю','1 раз в неделю','2 раза в день'].forEach(opt => {
           const o = document.createElement('option');
           o.value = opt;
           o.textContent = opt;
@@ -478,17 +478,31 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         procDiv.appendChild(freqLabel);
         procDiv.appendChild(freqSelect);
-        // Время
-        const timeLabel = document.createElement('label');
-        timeLabel.textContent = ' Время:';
-        timeLabel.style.marginLeft = '12px';
-        const timeInput = document.createElement('input');
-        timeInput.type = 'time';
-        timeInput.name = `time_${i}`;
-        timeInput.required = true;
-        timeInput.style.marginLeft = '4px';
-        procDiv.appendChild(timeLabel);
-        procDiv.appendChild(timeInput);
+        // Время суток (утро/вечер/2 раза в день)
+        const timeOfDayLabel = document.createElement('div');
+        timeOfDayLabel.textContent = 'Время приёма:';
+        timeOfDayLabel.style.margin = '8px 0 2px 0';
+        timeOfDayLabel.style.fontSize = '1em';
+        timeOfDayLabel.style.color = '#444';
+        procDiv.appendChild(timeOfDayLabel);
+        const timeOfDayWrap = document.createElement('div');
+        timeOfDayWrap.style.display = 'flex';
+        timeOfDayWrap.style.gap = '12px';
+        ['Утро','Вечер','2 раза в день'].forEach((label, idx) => {
+          const radio = document.createElement('input');
+          radio.type = 'radio';
+          radio.name = `timeofday_${i}`;
+          radio.value = label;
+          radio.id = `timeofday_${i}_${idx}`;
+          if (idx === 0) radio.checked = true;
+          const radioLabel = document.createElement('label');
+          radioLabel.htmlFor = radio.id;
+          radioLabel.textContent = label;
+          radioLabel.style.marginRight = '8px';
+          timeOfDayWrap.appendChild(radio);
+          timeOfDayWrap.appendChild(radioLabel);
+        });
+        procDiv.appendChild(timeOfDayWrap);
         calendarProceduresList.appendChild(procDiv);
       });
       calendarModal.style.display = 'flex';
@@ -514,7 +528,7 @@ document.addEventListener('DOMContentLoaded', function() {
           step: stepKey,
           product: lastRoutineData[stepKey]?.name || '',
           freq: formData.get(`freq_${i}`),
-          time: formData.get(`time_${i}`)
+          timeOfDay: formData.get(`timeofday_${i}`)
         });
       });
       calendarProcedures = result;
@@ -543,14 +557,14 @@ document.addEventListener('DOMContentLoaded', function() {
       step.className = 'calendar-view-step';
       step.textContent = `Этап: ${proc.step}`;
       item.appendChild(step);
-      const time = document.createElement('div');
-      time.className = 'calendar-view-time';
-      time.textContent = `Время: ${proc.time}`;
-      item.appendChild(time);
       const freq = document.createElement('div');
       freq.className = 'calendar-view-freq';
       freq.textContent = `Частота: ${proc.freq}`;
       item.appendChild(freq);
+      const timeOfDay = document.createElement('div');
+      timeOfDay.className = 'calendar-view-timeofday';
+      timeOfDay.textContent = `Время приёма: ${proc.timeOfDay}`;
+      item.appendChild(timeOfDay);
       calendarViewList.appendChild(item);
     });
   }
