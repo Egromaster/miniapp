@@ -20,7 +20,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 Нажми кнопку ниже, чтобы начать! ⤵️
     """
     keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton("Открыть приложение", url="https://t.me/firstttttttttry_bot?profile")]
+        [InlineKeyboardButton("Открыть приложение", url="https://egromaster.github.io/miniapp/#")]
     ])
     
     # Обязательно проверь, что сообщение действительно от пользователя, а не пустое
