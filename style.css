@@ -418,6 +418,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 .calendar-modal-title {
   font-size: 1.25em;
@@ -514,4 +516,11 @@ body {
 .calendar-view-item .calendar-view-freq {
   font-size: 0.97em;
   color: #888;
+}
+#calendar-procedures-list {
+  max-height: 60vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
