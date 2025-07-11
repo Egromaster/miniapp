@@ -313,14 +313,25 @@ document.addEventListener('DOMContentLoaded', function() {
     btnBudgetNext.addEventListener('click', async () => {
       currentUser.budget = selectedBudget;
       try {
+        // Убираем знак рубля и делаем значения бюджета информативными
+        const userToSave = { ...currentUser };
+        if (userToSave.budget) {
+          if (/до\s*1000/i.test(userToSave.budget)) {
+            userToSave.budget = 'до 1000';
+          } else if (/1000\s*-\s*3000/i.test(userToSave.budget)) {
+            userToSave.budget = '1000-3000';
+          } else if (/выше\s*3000/i.test(userToSave.budget)) {
+            userToSave.budget = 'выше 3000';
+          } else {
+            userToSave.budget = userToSave.budget.replace(/[^0-9\-]/g, '');
+          }
+        }
         await fetch(`${AMVERA_BASE_URL}/api/save_user_data`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(currentUser)
+          body: JSON.stringify(userToSave)
         });
-      } catch (e) {
-        // Можно добавить обработку ошибок
-      }
+      } catch (e) {}
       // Показываем экран загрузки
       document.querySelectorAll('.app-screen').forEach(screen => screen.style.display = 'none');
       document.getElementById('screen-loading').style.display = 'flex';
@@ -353,7 +364,7 @@ document.addEventListener('DOMContentLoaded', function() {
         step: stepsCount,
         benefits: Array.isArray(currentUser.goals) ? currentUser.goals.join(',') : ''
       });
-      const apiUrl = 'https://script.google.com/macros/s/AKfycbzszgod0MpGwWlJiAJWtfIngy28M5gdijWNKF4uXGrDSgZMmkeZfb2MLxKqJ8XATo8_gA/exec?';
+      const apiUrl = 'https://script.google.com/macros/s/AKfycbw-nsaSPmZpv8sCb58M8OH68xuXFsf0_WM8hsfL_xEx_iipCZwolBW5rDc7a5Bcsjio6w/exec?';
       const fullUrl = `${apiUrl}?${params}`;
       let data = null;
       try {
