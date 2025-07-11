@@ -432,6 +432,17 @@ document.addEventListener('DOMContentLoaded', function() {
   // Удалён обработчик для кнопки 'Посмотреть подбор', теперь она не выполняет никаких действий
 });
 
+// Обработчик для ссылки на политику конфиденциальности (регистрация)
+document.addEventListener('DOMContentLoaded', function() {
+  const privacyLink = document.getElementById('privacy-link');
+  if (privacyLink) {
+    privacyLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      window.open('https://drive.google.com/file/d/1fwlCSkWskAojRClX3Mi956gWgl-7boPO/view?usp=sharing', '_blank');
+    });
+  }
+});
+
 // Функция для показа сообщений пользователю
 function showMessage(text, type = 'info') {
   let msg = document.getElementById('message');
