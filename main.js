@@ -38,6 +38,10 @@ document.addEventListener('DOMContentLoaded', function() {
   const screenBudget = document.getElementById('screen-budget');
   const budgetBtns = document.querySelectorAll('.budget-btn');
   const btnBudgetNext = document.getElementById('btn-budget-next');
+  const btnShowResult = document.getElementById('btn-show-result');
+  const screenLoading = document.getElementById('screen-loading');
+  const screenResult = document.getElementById('screen-result');
+  const resultStepsList = document.getElementById('result-steps-list');
 
   if (btnRegister && screenRegister && screenWelcome) {
     btnRegister.addEventListener('click', () => {
@@ -323,218 +327,66 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // ========== ADVANCED COSMETIC RECOMMENDER SYSTEM v5.2 ========== //
-  const CONFIG = {
-    SPREADSHEET_ID: '1OtSbpF_-bRMHrcffVGRNmvqskV6Zgy2v8g0c7pxrTZg',
-    SHEET_NAME: 'Products',
-    DATA_RANGE: 'A1:M1373',
-    API_KEY: 'AIzaSyD117gv97TsNT8oyn6sq11VGuYNrWQlFco',
-    ROUTINE_STEPS: {
-      3: ['cleansing', 'treatment', 'protection'],
-      5: ['cleansing', 'toning', 'treatment', 'moisturizing', 'protection'],
-      7: ['cleansing', 'exfoliating', 'toning', 'treatment', 'ampoules', 'moisturizing', 'protection']
-    },
-    STEP_MAPPING: {
-      'cleansing': ['очищение', 'cleansing', 'cleanse'],
-      'toning': ['тонизирование', 'toning', 'tone'],
-      'treatment': ['уход', 'treatment', 'serum'],
-      'moisturizing': ['увлажнение', 'moisturizing', 'moisturize'],
-      'protection': ['защита', 'protection', 'spf'],
-      'exfoliating': ['эксфолиация', 'exfoliating', 'exfoliate'],
-      'ampoules': ['ампулы', 'ampoules', 'ampoule']
-    },
-    COUNTRY_OPTIONS: {
-      'корейская': ['Korea', 'South Korea', 'Korean'],
-      'европейская': ['France', 'Germany', 'Italy', 'Spain', 'EU', 'European', 'French', 'German', 'Italian', 'Spanish'],
-      'русская': ['Russia', 'Russian'],
-      'все': []
-    },
-    PRICE_TIERS: {
-      'до 1000': { min: 0, max: 1000 },
-      '1000-3000': { min: 1000, max: 3000 },
-      '3000+': { min: 3000, max: Infinity },
-      'все': { min: 0, max: Infinity }
-    },
-    INCOMPATIBLE_PAIRS: [
-      { group1: ["Retinol", "Retinaldehyde", "Retinyl Palmitate"], group2: ["AHA", "BHA", "PHA", "Glycolic Acid", "Lactic Acid", "Salicylic Acid", "Citric Acid"], reason: "Causes irritation and dryness" },
-      { group1: ["Vitamin C", "L-Ascorbic Acid", "Sodium Ascorbyl Phosphate"], group2: ["Niacinamide", "Vitamin B3"], reason: "May cause flushing and reduce efficacy" },
-      { group1: ["Benzoyl Peroxide"], group2: ["Vitamin C", "Retinol", "Peptides"], reason: "Oxidizes active ingredients" },
-      { group1: ["Copper Peptides"], group2: ["Vitamin C", "Direct Acids"], reason: "Can destabilize the peptides" }
-    ],
-    SKIN_TYPE_RESTRICTIONS: {
-      dry: ["Alcohol", "Alcohol Denat", "Fragrance"],
-      oily: ["Mineral Oil", "Petrolatum"],
-      sensitive: ["Fragrance", "Essential Oils"],
-      normal: [],
-      combination: ["SD Alcohol"]
-    }
-  };
+  if (btnShowResult) {
+    btnShowResult.addEventListener('click', async () => {
+      // Скрыть все экраны, показать лоадер
+      document.querySelectorAll('.app-screen').forEach(screen => screen.style.display = 'none');
+      screenLoading.style.display = 'flex';
 
-  async function loadProductDatabase() {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SPREADSHEET_ID}/values/${CONFIG.SHEET_NAME}!${CONFIG.DATA_RANGE}?key=${CONFIG.API_KEY}`;
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('API Error: ' + await response.text());
-    const data = await response.json();
-    if (!data.values || data.values.length < 2) throw new Error('No product data found');
-    const headers = data.values[0].map(h => h.toLowerCase().replace(/\s+/g, '_'));
-    return data.values.slice(1).map(row => {
-      const product = {};
-      headers.forEach((header, i) => { product[header] = row[i] || ''; });
-      return product;
-    });
-  }
-
-  function filterProducts(products, params) {
-    return products.filter(product => {
-      const stepMatch = product.step && params.steps.some(stepName => {
-        const stepVariants = CONFIG.STEP_MAPPING[stepName] || [stepName];
-        return stepVariants.some(variant => product.step.toLowerCase().includes(variant.toLowerCase()));
-      });
-      const countryMatch = params.country === 'все' ||
-        (product.country && (
-          !params.country ||
-          CONFIG.COUNTRY_OPTIONS[params.country]?.some(country => product.country.toLowerCase().includes(country.toLowerCase()))
-        ));
-      const priceValue = parseFloat(product.price) || 0;
-      const priceMatch = priceValue >= params.price.min && priceValue <= params.price.max;
-      const skinTypeMatch = !product.skin_type ||
-        product.skin_type.toLowerCase() === 'all' ||
-        product.skin_type.toLowerCase().split(',').includes(params.skinType) ||
-        params.skinType === 'all';
-      const benefitsMatch = params.benefits.length === 0 ||
-        !product.benefits ||
-        (product.benefits && params.benefits.some(b => product.benefits.toLowerCase().includes(b.toLowerCase())));
-      return stepMatch && countryMatch && priceMatch && skinTypeMatch && benefitsMatch;
-    });
-  }
-
-  async function generateRoutine(userRequest) {
-    try {
-      const params = {
-        skinType: (userRequest.skin_type || 'all').toLowerCase(),
-        benefits: userRequest.benefits ? userRequest.benefits.map(b => b.toLowerCase()) : [],
-        country: userRequest.country && CONFIG.COUNTRY_OPTIONS[userRequest.country.toLowerCase()] ? userRequest.country.toLowerCase() : 'все',
-        price: userRequest.price && CONFIG.PRICE_TIERS[userRequest.price.toLowerCase()] ? CONFIG.PRICE_TIERS[userRequest.price.toLowerCase()] : CONFIG.PRICE_TIERS['все'],
-        stepCount: [3, 5, 7].includes(parseInt(userRequest.step)) ? parseInt(userRequest.step) : 5,
-        steps: CONFIG.ROUTINE_STEPS[[3, 5, 7].includes(parseInt(userRequest.step)) ? parseInt(userRequest.step) : 5]
-      };
-      const allProducts = await loadProductDatabase();
-      const filteredProducts = filterProducts(allProducts, params);
-      if (filteredProducts.length === 0) {
-        return { success: false, error: 'No products matching your criteria', parameters: params };
+      // Сохранить данные пользователя (если нужно)
+      try {
+        await fetch(`${AMVERA_BASE_URL}/api/save_user_data`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(currentUser)
+        });
+      } catch (e) {
+        // Можно добавить обработку ошибок
       }
-      const routine = {};
-      const warnings = checkIngredientCompatibility(filteredProducts);
-      for (const step of params.steps) {
-        const stepVariants = CONFIG.STEP_MAPPING[step] || [step];
-        const stepProducts = filteredProducts.filter(p =>
-          p.step && stepVariants.some(variant => p.step.toLowerCase().includes(variant.toLowerCase()))
-        );
-        if (stepProducts.length > 0) {
-          stepProducts.sort((a, b) => {
-            const ratingA = parseFloat(a.rating) || 0;
-            const ratingB = parseFloat(b.rating) || 0;
-            return ratingB - ratingA || (parseFloat(a.price) || 0) - (parseFloat(b.price) || 0);
-          });
-          const formattedProduct = formatProduct(stepProducts[0]);
-          if (formattedProduct) {
-            routine[step] = formattedProduct;
-          }
-        }
-      }
-      return { success: true, routine, parameters: params, warnings, skinCareTips: getSkinCareTips(params.skinType) };
-    } catch (error) {
-      console.error('Recommendation error:', error);
-      return { success: false, error: error.message };
-    }
-  }
 
-  function checkIngredientCompatibility(products) {
-    const warnings = [];
-    if (!Array.isArray(products)) return warnings;
-    products.forEach(product => {
-      if (!product || !product.ingredients || !product.name) return;
-      const ingredients = product.ingredients.split(',').map(i => i.trim()).filter(Boolean);
-      CONFIG.INCOMPATIBLE_PAIRS.forEach(pair => {
-        const hasGroup1 = pair.group1.some(ing => ingredients.includes(ing));
-        const hasGroup2 = pair.group2.some(ing => ingredients.includes(ing));
-        if (hasGroup1 && hasGroup2) {
-          warnings.push({ product: product.name, conflict: `${pair.group1.join('/')} + ${pair.group2.join('/')}`, reason: pair.reason });
-        }
+      // Собрать параметры для API
+      const params = new URLSearchParams({
+        skin_type: currentUser.skin || '',
+        country: currentUser.country || '',
+        price: (currentUser.budget || '').replace(/[^\d\-]/g, ''),
+        step: String(currentUser.steps || ''),
+        benefits: (currentUser.goals || []).join(',')
       });
-    });
-    return warnings;
-  }
-
-  function formatProduct(product) {
-    if (!product) return null;
-    return {
-      name: product.name || 'Unnamed Product',
-      brand: product.brand || 'Unknown Brand',
-      price: product.price ? parseFloat(product.price) : 0,
-      country: product.country || 'Unknown',
-      ingredients: product.ingredients || '',
-      benefits: product.benefits || '',
-      rating: product.rating ? parseFloat(product.rating) : null,
-      step: product.step || 'Unknown',
-      texture: product.texture || '',
-      is_spf: product.is_spf === 'TRUE'
-    };
-  }
-
-  function getSkinCareTips(skinType) {
-    const tips = {
-      dry: ["Use cream cleansers", "Apply serums on damp skin", "Use night creams with ceramides"],
-      oily: ["Use gel textures", "Try niacinamide products", "Don't skip moisturizer"],
-      sensitive: ["Avoid alcohol", "Patch test new products", "Look for calming ingredients"],
-      combination: ["Use different products for different zones", "Balance hydration"],
-      all: ["Cleanse twice daily", "Always use SPF", "Adjust routine based on skin condition"],
-      normal: ["Maintain consistent routine", "Use SPF daily", "Listen to your skin"]
-    };
-    return tips[skinType] || ["Cleanse twice daily", "Always use SPF"];
-  }
-
-  document.getElementById('btn-show-result').addEventListener('click', async () => {
-    const userParams = {
-      skin_type: currentUser.skin || 'all',
-      benefits: (currentUser.goals || []).map(b => b.toLowerCase()),
-      country: currentUser.country || 'все',
-      price: currentUser.budget || 'все',
-      step: currentUser.steps || 5
-    };
-    let result;
-    try {
-      result = await generateRoutine(userParams);
-    } catch (e) {
-      showMessage('Ошибка подбора средств', 'error');
-      return;
-    }
-    if (result.success && result.routine) {
-      showRoutineScreen(result.routine, userParams.step);
-    } else {
-      showMessage('Не удалось подобрать средства', 'error');
-    }
-  });
-
-  function showRoutineScreen(routine, stepCount) {
-    document.querySelectorAll('.app-screen').forEach(screen => screen.style.display = 'none');
-    const screen = document.getElementById('screen-routine');
-    screen.style.display = 'flex';
-    const list = screen.querySelector('.routine-list');
-    list.innerHTML = '';
-    const steps = CONFIG.ROUTINE_STEPS[stepCount];
-    steps.forEach((step, i) => {
-      const product = routine[step];
-      const item = document.createElement('div');
-      item.className = 'routine-item';
-      item.innerHTML = `
-        <div class="routine-step-num">${i + 1}</div>
-        <div class="routine-step-product">${product ? product.name : 'Нет предпочтений'}</div>
-      `;
-      list.appendChild(item);
+      const url = `https://script.google.com/macros/s/AKfycbwj-v_qjzcCBjz5SHjJ6-n_pOC0KcqxXGTmDTZPf0ZDivNAntgRYg0Dx60QMtUmHWM/exec?${params}`;
+      let data = null;
+      try {
+        const response = await fetch(url);
+        data = await response.json();
+      } catch (error) {
+        data = null;
+      }
+      // Скрыть лоадер, показать результат
+      screenLoading.style.display = 'none';
+      screenResult.style.display = 'flex';
+      // Очистить список
+      resultStepsList.innerHTML = '';
+      // Определить количество шагов
+      let stepsCount = parseInt(currentUser.steps || '0', 10);
+      if (!stepsCount || stepsCount < 3) stepsCount = 3;
+      if (stepsCount > 7) stepsCount = 7;
+      // Если нет данных или данные не массив — выводим "Нет предпочтений"
+      let steps = (data && Array.isArray(data.routine)) ? data.routine : null;
+      for (let i = 0; i < stepsCount; i++) {
+        const stepDiv = document.createElement('div');
+        stepDiv.className = 'result-step';
+        const numDiv = document.createElement('div');
+        numDiv.className = 'result-step-number';
+        numDiv.textContent = (i + 1).toString();
+        const textDiv = document.createElement('div');
+        textDiv.textContent = steps && steps[i] ? steps[i] : 'Нет предпочтений';
+        stepDiv.appendChild(numDiv);
+        stepDiv.appendChild(textDiv);
+        resultStepsList.appendChild(stepDiv);
+      }
     });
   }
 
+  // Удалён обработчик для кнопки 'Посмотреть подбор', теперь она не выполняет никаких действий
 });
 
 // Функция для показа сообщений пользователю
