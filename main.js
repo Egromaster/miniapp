@@ -329,7 +329,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
   if (btnShowResult) {
     btnShowResult.addEventListener('click', async () => {
-      // Скрыть все экраны, показать лоадер
       document.querySelectorAll('.app-screen').forEach(screen => screen.style.display = 'none');
       screenLoading.style.display = 'flex';
 
@@ -340,48 +339,64 @@ document.addEventListener('DOMContentLoaded', function() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(currentUser)
         });
-      } catch (e) {
-        // Можно добавить обработку ошибок
-      }
+      } catch (e) {}
 
-      // Собрать параметры для API
+      // Корректно определяем количество шагов (3, 5 или 7)
+      let stepsCount = parseInt(currentUser.steps, 10);
+      if (![3,5,7].includes(stepsCount)) stepsCount = 3;
+
+      // Собираем параметры для API с проверкой на undefined
       const params = new URLSearchParams({
         skin_type: currentUser.skin || '',
         country: currentUser.country || '',
-        price: (currentUser.budget || '').replace(/[^\d\-]/g, ''),
-        step: String(currentUser.steps || ''),
-        benefits: (currentUser.goals || []).join(',')
+        price: (currentUser.budget || '').replace(/[^ 0-9\d\-]/g, ''),
+        step: stepsCount,
+        benefits: Array.isArray(currentUser.goals) ? currentUser.goals.join(',') : ''
       });
-      const url = `https://script.google.com/macros/s/AKfycbwj-v_qjzcCBjz5SHjJ6-n_pOC0KcqxXGTmDTZPf0ZDivNAntgRYg0Dx60QMtUmHWM/exec?${params}`;
+      const apiUrl = 'https://script.google.com/macros/s/AKfycbxknsDDV0giZIWL96qqReHFq3fYDfL4861NphtBLLWgjGcLSvsiS36XLdITvH_mZOQo/exec';
       let data = null;
       try {
-        const response = await fetch(url);
+        const response = await fetch(`${apiUrl}?${params}`);
         data = await response.json();
       } catch (error) {
         data = null;
       }
-      // Скрыть лоадер, показать результат
       screenLoading.style.display = 'none';
       screenResult.style.display = 'flex';
-      // Очистить список
       resultStepsList.innerHTML = '';
-      // Определить количество шагов
-      let stepsCount = parseInt(currentUser.steps || '0', 10);
-      if (!stepsCount || stepsCount < 3) stepsCount = 3;
-      if (stepsCount > 7) stepsCount = 7;
-      // Если нет данных или данные не массив — выводим "Нет предпочтений"
-      let steps = (data && Array.isArray(data.routine)) ? data.routine : null;
-      for (let i = 0; i < stepsCount; i++) {
-        const stepDiv = document.createElement('div');
-        stepDiv.className = 'result-step';
-        const numDiv = document.createElement('div');
-        numDiv.className = 'result-step-number';
-        numDiv.textContent = (i + 1).toString();
-        const textDiv = document.createElement('div');
-        textDiv.textContent = steps && steps[i] ? steps[i] : 'Нет предпочтений';
-        stepDiv.appendChild(numDiv);
-        stepDiv.appendChild(textDiv);
-        resultStepsList.appendChild(stepDiv);
+      if (data && data.success && data.routine && Object.keys(data.routine).length > 0) {
+        const stepsList = Object.keys(data.routine);
+        for (let i = 0; i < stepsCount; i++) {
+          const stepKey = stepsList[i] || '';
+          const product = data.routine[stepKey] || {};
+          const stepDiv = document.createElement('div');
+          stepDiv.className = 'result-step';
+          const numDiv = document.createElement('div');
+          numDiv.className = 'result-step-number';
+          numDiv.textContent = (i + 1).toString();
+          const textDiv = document.createElement('div');
+          if (stepKey && product.name) {
+            textDiv.innerHTML = `<b>${stepKey}</b>: ${product.name}${product.brand ? ' (' + product.brand + ')' : ''}`;
+          } else {
+            textDiv.textContent = 'Нет предпочтений';
+          }
+          stepDiv.appendChild(numDiv);
+          stepDiv.appendChild(textDiv);
+          resultStepsList.appendChild(stepDiv);
+        }
+      } else {
+        for (let i = 0; i < stepsCount; i++) {
+          const stepDiv = document.createElement('div');
+          stepDiv.className = 'result-step';
+          const numDiv = document.createElement('div');
+          numDiv.className = 'result-step-number';
+          numDiv.textContent = (i + 1).toString();
+          const textDiv = document.createElement('div');
+          textDiv.textContent = 'Нет предпочтений';
+          stepDiv.appendChild(numDiv);
+          stepDiv.appendChild(textDiv);
+          resultStepsList.appendChild(stepDiv);
+        }
       }
     });
   }
