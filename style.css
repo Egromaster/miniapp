@@ -550,3 +550,103 @@ body {
   flex-direction: column;
   gap: 18px;
 }
+.calendar-month-view {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 18px 8px 18px 8px;
+}
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.calendar-nav-btn {
+  background: none;
+  border: none;
+  font-size: 1.5em;
+  cursor: pointer;
+  color: #4ecdc4;
+}
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.calendar-cell {
+  min-height: 48px;
+  background: #eafffa;
+  border-radius: 8px;
+  text-align: center;
+  padding: 4px 2px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.15s;
+  font-size: 1.08em;
+  color: #222;
+}
+.calendar-cell.today {
+  border: 2px solid #4ecdc4;
+  background: #f0f4ff;
+}
+/* Удаляю точку */
+/* .calendar-cell .calendar-proc-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #4ecdc4;
+  border-radius: 50%;
+  margin: 2px 1px 0 1px;
+} */
+
+/* Новый стиль для кратких названий процедур */
+.calendar-cell .calendar-proc-short {
+  display: block;
+  font-size: 0.75em;
+  color: #4ecdc4;
+  margin-top: 2px;
+  line-height: 1.1;
+  word-break: break-word;
+}
+.calendar-day-detail {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.18);
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.calendar-day-detail-inner {
+  background: #fff;
+  border-radius: 16px;
+  max-width: 340px;
+  width: 95vw;
+  padding: 22px 16px 18px 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.calendar-day-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  font-size: 1.1em;
+  margin-bottom: 8px;
+}
+.calendar-day-detail-list {
+  margin-top: 8px;
+}
+.calendar-day-detail-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5em;
+  color: #4ecdc4;
+  cursor: pointer;
+}
