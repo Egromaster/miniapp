@@ -2,6 +2,9 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
 from werkzeug.utils import secure_filename
+import asyncio
+from telegram import InlineKeyboardMarkup, InlineKeyboardButton
+from telegram.ext import Application, CommandHandler
 
 app = Flask(__name__)
 CORS(app)
@@ -97,8 +100,43 @@ def get_user_data():
     """Получить все данные пользователей (для отладки)"""
     return jsonify({'status': 'ok', 'data': user_data})
 
+# --- Telegram Bot Logic ---
+
+async def start(update, context):
+    welcome_text = """
+👋 Привет!  
+
+Добро пожаловать в Smooth — твой персональный мобильный помощник по уходу за кожей.  
+
+Здесь ты можешь:  
+
+✅ Получить персональную подборку уходовых средств  
+✅Создать календарь ухода с напоминаниями  
+✅ Отслеживать эффективность уходовых продуктов  
+✅ Анализировать изменения кожи лица с AI-помощником  
+
+Нажми кнопку ниже, чтобы начать! ⤵️
+    """
+    keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("Открыть приложение", web_app={"url": "https://t.me/firstttttttttry_bot?profile"})]
+    ])
+    await update.message.reply_text(
+        text=welcome_text,
+        parse_mode="Markdown",
+        reply_markup=keyboard
+    )
+
+async def run_telegram_bot():
+    application = Application.builder().token("YOUR_TELEGRAM_BOT_TOKEN").build()
+    application.add_handler(CommandHandler("start", start))
+    await application.run_polling()
+
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=80)
+    # Run Flask and Telegram bot in parallel
+    loop = asyncio.get_event_loop()
+    flask_future = loop.run_in_executor(None, lambda: app.run(debug=True, host='0.0.0.0', port=80))
+    tg_future = loop.create_task(run_telegram_bot())
+    loop.run_until_complete(asyncio.gather(flask_future, tg_future))
 
 
 
