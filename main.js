@@ -77,7 +77,8 @@ document.addEventListener('DOMContentLoaded', function() {
           
           // Переход на экран селфи
           screenRegister.style.display = 'none';
-          screenSelfie.style.display = 'flex';
+          // showSelfieScreen вместо прямого показа
+          showSelfieScreen();
         } else {
           showMessage('Ошибка регистрации: ' + (data.error || 'Попробуйте позже.'), 'error');
         }
@@ -85,6 +86,29 @@ document.addEventListener('DOMContentLoaded', function() {
         showMessage('Ошибка соединения с сервером.', 'error');
       }
     });
+  }
+
+  // Показывать камеру при открытии экрана селфи
+  function showSelfieScreen() {
+    document.querySelectorAll('.app-screen').forEach(screen => screen.style.display = 'none');
+    screenSelfie.style.display = 'flex';
+    // Запуск камеры
+    if (!selfieStream) {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+          selfieStream = stream;
+          selfieVideo.srcObject = stream;
+          selfieVideo.style.display = 'block';
+          selfiePlaceholder.style.display = 'none';
+        })
+        .catch(() => {
+          showMessage('Не удалось получить доступ к камере', 'error');
+        });
+    } else {
+      selfieVideo.srcObject = selfieStream;
+      selfieVideo.style.display = 'block';
+      selfiePlaceholder.style.display = 'none';
+    }
   }
 
   // После успешной загрузки селфи — переход на экран выбора пола
@@ -914,3 +938,5 @@ function showMessage(text, type = 'info') {
   msg.style.display = 'block';
   setTimeout(() => { msg.style.display = 'none'; }, 2500);
 }
+
+
