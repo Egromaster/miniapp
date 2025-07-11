@@ -490,7 +490,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         procDiv.appendChild(freqLabel);
         procDiv.appendChild(freqSelect);
-        // Время суток (утро/вечер/2 раза в день)
+        // Время суток (утро/вечер, чекбоксы)
         const timeOfDayLabel = document.createElement('div');
         timeOfDayLabel.textContent = 'Время приёма:';
         timeOfDayLabel.style.margin = '8px 0 2px 0';
@@ -498,21 +498,21 @@ document.addEventListener('DOMContentLoaded', function() {
         timeOfDayLabel.style.color = '#444';
         procDiv.appendChild(timeOfDayLabel);
         const timeOfDayWrap = document.createElement('div');
-        timeOfDayWrap.style.display = 'flex';
-        timeOfDayWrap.style.gap = '12px';
-        ['Утро','Вечер','2 раза в день'].forEach((label, idx) => {
-          const radio = document.createElement('input');
-          radio.type = 'radio';
-          radio.name = `timeofday_${i}`;
-          radio.value = label;
-          radio.id = `timeofday_${i}_${idx}`;
-          if (idx === 0) radio.checked = true;
-          const radioLabel = document.createElement('label');
-          radioLabel.htmlFor = radio.id;
-          radioLabel.textContent = label;
-          radioLabel.style.marginRight = '8px';
-          timeOfDayWrap.appendChild(radio);
-          timeOfDayWrap.appendChild(radioLabel);
+        timeOfDayWrap.className = 'calendar-timeofday-wrap';
+        [
+          {label: 'Утро', value: 'Утро'},
+          {label: 'Вечер', value: 'Вечер'}
+        ].forEach((opt, idx) => {
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.name = `timeofday_${i}`;
+          checkbox.value = opt.value;
+          checkbox.id = `timeofday_${i}_${idx}`;
+          const checkboxLabel = document.createElement('label');
+          checkboxLabel.htmlFor = checkbox.id;
+          checkboxLabel.textContent = opt.label;
+          timeOfDayWrap.appendChild(checkbox);
+          timeOfDayWrap.appendChild(checkboxLabel);
         });
         procDiv.appendChild(timeOfDayWrap);
         calendarProceduresList.appendChild(procDiv);
@@ -536,11 +536,14 @@ document.addEventListener('DOMContentLoaded', function() {
       const result = [];
       if (!lastRoutineSteps) return;
       lastRoutineSteps.forEach((stepKey, i) => {
+        // Собираем значения чекбоксов времени суток
+        const timeOfDay = [];
+        calendarForm.querySelectorAll(`input[name="timeofday_${i}"]:checked`).forEach(cb => timeOfDay.push(cb.value));
         result.push({
           step: stepKey,
           product: lastRoutineData[stepKey]?.name || '',
           freq: formData.get(`freq_${i}`),
-          timeOfDay: formData.get(`timeofday_${i}`)
+          timeOfDay: timeOfDay
         });
       });
       calendarProcedures = result;
@@ -575,7 +578,7 @@ document.addEventListener('DOMContentLoaded', function() {
       item.appendChild(freq);
       const timeOfDay = document.createElement('div');
       timeOfDay.className = 'calendar-view-timeofday';
-      timeOfDay.textContent = `Время приёма: ${proc.timeOfDay}`;
+      timeOfDay.textContent = `Время приёма: ${proc.timeOfDay.join(', ')}`;
       item.appendChild(timeOfDay);
       calendarViewList.appendChild(item);
     });
