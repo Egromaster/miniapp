@@ -415,16 +415,10 @@ document.addEventListener('DOMContentLoaded', function() {
           numDiv.className = 'result-step-number';
           numDiv.textContent = (i + 1).toString();
           const textDiv = document.createElement('div');
-          // Переводим цели ухода на русский, если они есть в benefits
-          let ruBenefits = '';
-          if (product.benefits) {
-            const benefitArr = Array.isArray(product.benefits) ? product.benefits : String(product.benefits).split(',');
-            ruBenefits = benefitArr.map(b => goalTranslations[b.trim()] || b.trim()).join(', ');
-          }
           // Переводим этап на русский
           const ruStep = stepTranslations[stepKey] || stepKey;
           if (stepKey && product.name) {
-            textDiv.innerHTML = `<b>${ruStep}</b>: ${product.name}${product.brand ? ' (' + product.brand + ')' : ''}${ruBenefits ? '<br><span style=\"font-size:0.95em;color:#666;\">' + ruBenefits + '</span>' : ''}`;
+            textDiv.innerHTML = `<b>${ruStep}</b>: ${product.name}${product.brand ? ' (' + product.brand + ')' : ''}`;
           } else {
             textDiv.textContent = 'Нет предпочтений';
           }
