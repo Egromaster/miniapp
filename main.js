@@ -376,6 +376,16 @@ document.addEventListener('DOMContentLoaded', function() {
       screenLoading.style.display = 'none';
       screenResult.style.display = 'flex';
       resultStepsList.innerHTML = '';
+      // Словарь переводов целей ухода
+      const goalTranslations = {
+        'hydration': 'Увлажнение',
+        'acne': 'Борьба с акне',
+        'anti-age': 'Избавление от морщин',
+        'pigmentation': 'Осветление пигментации',
+        'soothing': 'Успокоение кожи',
+        'matting': 'Матирование',
+        'improvement': 'Общее улучшение кожи'
+      };
       if (data && data.success && data.routine && Object.keys(data.routine).length > 0) {
         const stepsList = Object.keys(data.routine);
         for (let i = 0; i < stepsCount; i++) {
@@ -387,8 +397,14 @@ document.addEventListener('DOMContentLoaded', function() {
           numDiv.className = 'result-step-number';
           numDiv.textContent = (i + 1).toString();
           const textDiv = document.createElement('div');
+          // Переводим цели ухода на русский, если они есть в benefits
+          let ruBenefits = '';
+          if (product.benefits) {
+            const benefitArr = Array.isArray(product.benefits) ? product.benefits : String(product.benefits).split(',');
+            ruBenefits = benefitArr.map(b => goalTranslations[b.trim()] || b.trim()).join(', ');
+          }
           if (stepKey && product.name) {
-            textDiv.innerHTML = `<b>${stepKey}</b>: ${product.name}${product.brand ? ' (' + product.brand + ')' : ''}`;
+            textDiv.innerHTML = `<b>${stepKey}</b>: ${product.name}${product.brand ? ' (' + product.brand + ')' : ''}${ruBenefits ? '<br><span style="font-size:0.95em;color:#666;">Цель: ' + ruBenefits + '</span>' : ''}`;
           } else {
             textDiv.textContent = 'Нет предпочтений';
           }
