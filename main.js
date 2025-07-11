@@ -548,8 +548,9 @@ document.addEventListener('DOMContentLoaded', function() {
       });
       calendarProcedures = result;
       calendarModal.style.display = 'none';
-      // Открываем окно просмотра календаря
-      renderCalendarView();
+      // Открываем окно просмотра календаря (месяц)
+      const now = new Date();
+      renderMonthCalendar(now.getFullYear(), now.getMonth());
       calendarViewModal.style.display = 'flex';
     });
   }
