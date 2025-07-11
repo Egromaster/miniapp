@@ -353,32 +353,14 @@ document.addEventListener('DOMContentLoaded', function() {
         step: stepsCount,
         benefits: Array.isArray(currentUser.goals) ? currentUser.goals.join(',') : ''
       });
-      const apiUrl = 'https://script.google.com/macros/s/AKfycbxknsDDV0giZIWL96qqReHFq3fYDfL4861NphtBLLWgjGcLSvsiS36XLdITvH_mZOQo/exec';
+      const apiUrl = 'https://script.google.com/macros/u/1/s/AKfycbzszgod0MpGwWlJiAJWtfIngy28M5gdijWNKF4uXGrDSgZMmkeZfb2MLxKqJ8XATo8_gA/exec?skin_type=dry&benefits=hydration&country=корейская&price=1000-3000&step=5';
       const fullUrl = `${apiUrl}?${params}`;
-      console.log('API URL:', fullUrl);
-      console.log('Параметры запроса:', Object.fromEntries(params.entries()));
       let data = null;
       try {
         const response = await fetch(fullUrl);
         data = await response.json();
-        console.log('Ответ от API:', data);
-        if (data && data.routine) {
-          console.log('data.routine:', data.routine);
-          if (typeof data.routine !== 'object') {
-            console.warn('data.routine не является объектом!');
-          } else {
-            Object.keys(data.routine).forEach((key, idx) => {
-              if (!data.routine[key] || typeof data.routine[key].name === 'undefined') {
-                console.warn(`В шаге ${key} нет поля name!`, data.routine[key]);
-              }
-            });
-          }
-        } else {
-          console.warn('В ответе нет data.routine!');
-        }
       } catch (error) {
         data = null;
-        console.error('Ошибка запроса к API:', error);
       }
       screenLoading.style.display = 'none';
       screenResult.style.display = 'flex';
@@ -445,7 +427,6 @@ function showMessage(text, type = 'info') {
   msg.textContent = text;
   msg.style.display = 'block';
   setTimeout(() => { msg.style.display = 'none'; }, 2500);
-}
   msg.textContent = text;
   msg.style.display = 'block';
   setTimeout(() => { msg.style.display = 'none'; }, 2500);
