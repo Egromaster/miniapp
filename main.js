@@ -495,6 +495,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  // --- Календарь: просмотр всех процедур ---
+  const calendarViewModal = document.getElementById('calendar-view-modal');
+  const calendarViewList = document.getElementById('calendar-view-list');
+  const btnCloseCalendarView = document.getElementById('btn-close-calendar-view');
+  let calendarProcedures = [];
+
+  // Открыть окно календаря после сохранения процедур
   if (calendarForm) {
     calendarForm.addEventListener('submit', function(e) {
       e.preventDefault();
@@ -510,10 +517,47 @@ document.addEventListener('DOMContentLoaded', function() {
           time: formData.get(`time_${i}`)
         });
       });
-      // Пока просто выводим в консоль
-      console.log('Сохранить в календарь:', result);
-      // Здесь будет логика сохранения в календарь
+      calendarProcedures = result;
       calendarModal.style.display = 'none';
+      // Открываем окно просмотра календаря
+      renderCalendarView();
+      calendarViewModal.style.display = 'flex';
+    });
+  }
+
+  function renderCalendarView() {
+    if (!calendarViewList) return;
+    calendarViewList.innerHTML = '';
+    if (!calendarProcedures.length) {
+      calendarViewList.innerHTML = '<div style="text-align:center;color:#888;">Нет процедур</div>';
+      return;
+    }
+    calendarProcedures.forEach(proc => {
+      const item = document.createElement('div');
+      item.className = 'calendar-view-item';
+      const title = document.createElement('div');
+      title.className = 'calendar-view-title';
+      title.textContent = proc.product || 'Без названия';
+      item.appendChild(title);
+      const step = document.createElement('div');
+      step.className = 'calendar-view-step';
+      step.textContent = `Этап: ${proc.step}`;
+      item.appendChild(step);
+      const time = document.createElement('div');
+      time.className = 'calendar-view-time';
+      time.textContent = `Время: ${proc.time}`;
+      item.appendChild(time);
+      const freq = document.createElement('div');
+      freq.className = 'calendar-view-freq';
+      freq.textContent = `Частота: ${proc.freq}`;
+      item.appendChild(freq);
+      calendarViewList.appendChild(item);
+    });
+  }
+
+  if (btnCloseCalendarView) {
+    btnCloseCalendarView.addEventListener('click', function() {
+      calendarViewModal.style.display = 'none';
     });
   }
 
@@ -554,5 +598,3 @@ function showMessage(text, type = 'info') {
   msg.style.display = 'block';
   setTimeout(() => { msg.style.display = 'none'; }, 2500);
 }
-
-
