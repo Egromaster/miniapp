@@ -1,41 +1,37 @@
 import asyncio
 import os
-from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update
+from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update, WebAppInfo, Message
 from telegram.ext import Application, CommandHandler, ContextTypes
+
+WEB_APP_URL = "https://t.me/firstttttttttry_bot?startapp=1"
 
 # Хендлер команды /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    welcome_text = """
-👋 Привет!  
-
-Добро пожаловать в Smooth — твой персональный мобильный помощник по уходу за кожей.  
-
-Здесь ты можешь:  
-
-✅ Получить персональную подборку уходовых средств  
-✅ Создать календарь ухода с напоминаниями  
-✅ Отслеживать эффективность уходовых продуктов  
-✅ Анализировать изменения кожи лица с AI-помощником  
-
-Нажми кнопку ниже, чтобы начать! ⤵️
-    """
-    keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton("Открыть приложение", url="https://t.me/firstttttttttry_bot?startapp=welcome")]
-    ])
-    
-    # Обязательно проверь, что сообщение действительно от пользователя, а не пустое
-    if update.message:
-        await update.message.reply_text(
-            text=welcome_text,
-            parse_mode="Markdown",
-            reply_markup=keyboard
+    text = (
+        "👋 Привет!\n\n"
+        "Добро пожаловать в Smooth — твой персональный мобильный помощник по уходу за кожей.\n\n"
+        "Здесь ты можешь:\n\n"
+        "✅ Получить персональную подборку уходовых средств\n"
+        "✅ Создать календарь ухода с напоминаниями\n"
+        "✅ Отслеживать эффективность уходовых продуктов\n"
+        "✅ Анализировать изменения кожи лица с AI-помощником\n"
+    )
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                "Начать",
+                web_app=WebAppInfo(url=WEB_APP_URL)
+            )
+        ]
+    ]
+    if update.effective_chat:
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=text,
+            reply_markup=InlineKeyboardMarkup(keyboard)
         )
-    elif update.callback_query:
-        await update.callback_query.message.reply_text(
-            text=welcome_text,
-            parse_mode="Markdown",
-            reply_markup=keyboard
-        )
+    else:
+        print("Не удалось отправить сообщение: нет effective_chat.")
 
 # Запуск приложения
 async def main():
